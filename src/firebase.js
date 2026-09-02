@@ -1,10 +1,11 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getDatabase } from 'firebase/database';
 
 const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyARzyCoT4LPXWGwJfHYxeGmoKcwT-abn-8",
   authDomain: "to-do-7331a.firebaseapp.com",
   projectId: "to-do-7331a",
+  databaseURL: "https://to-do-7331a-default-rtdb.firebaseio.com",
   storageBucket: "to-do-7331a.firebasestorage.app",
   messagingSenderId: "115541188948",
   appId: "1:115541188948:web:677867653947b960f028c1",
@@ -40,6 +41,7 @@ export const getFirebaseConfig = () => ({
   apiKey: getEnvVar('REACT_APP_FIREBASE_API_KEY', DEFAULT_FIREBASE_CONFIG.apiKey),
   authDomain: getEnvVar('REACT_APP_FIREBASE_AUTH_DOMAIN', DEFAULT_FIREBASE_CONFIG.authDomain),
   projectId: getEnvVar('REACT_APP_FIREBASE_PROJECT_ID', DEFAULT_FIREBASE_CONFIG.projectId),
+  databaseURL: getEnvVar('REACT_APP_FIREBASE_DATABASE_URL', DEFAULT_FIREBASE_CONFIG.databaseURL),
   storageBucket: getEnvVar('REACT_APP_FIREBASE_STORAGE_BUCKET', DEFAULT_FIREBASE_CONFIG.storageBucket),
   messagingSenderId: getEnvVar('REACT_APP_FIREBASE_MESSAGING_SENDER_ID', DEFAULT_FIREBASE_CONFIG.messagingSenderId),
   appId: getEnvVar('REACT_APP_FIREBASE_APP_ID', DEFAULT_FIREBASE_CONFIG.appId),
@@ -60,10 +62,10 @@ let db = null;
 if (isFirebaseConfigured) {
   try {
     app = !getApps().length ? initializeApp(config) : getApp();
-    db = getFirestore(app);
-    console.log('[Daily Flow] Connected to Firebase Firestore project:', config.projectId);
+    db = getDatabase(app);
+    console.log('[Daily Flow] Connected to Firebase Realtime Database:', config.projectId);
   } catch (error) {
-    console.warn('[Daily Flow] Error initializing Firebase:', error);
+    console.warn('[Daily Flow] Error initializing Firebase Realtime Database:', error);
     db = null;
   }
 } else {

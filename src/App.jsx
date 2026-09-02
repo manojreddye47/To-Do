@@ -55,7 +55,7 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Subscribe to tasks for currentDate
+  // Subscribe to real-time tasks for currentDate
   useEffect(() => {
     setLoading(true);
     const unsubscribe = subscribeToTasks(currentDate, (updatedTasks) => {
@@ -81,7 +81,6 @@ export default function App() {
     };
 
     setTasks((prev) => [...prev, optimisticTask]);
-
     await addTask(taskData);
   };
 
@@ -90,7 +89,7 @@ export default function App() {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, completed: !currentCompletedState } : t))
     );
-    await toggleTaskCompleted(taskId, currentCompletedState);
+    await toggleTaskCompleted(taskId, currentCompletedState, currentDate);
   };
 
   // Handler: Edit Title with optimistic update
@@ -98,7 +97,7 @@ export default function App() {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, title: newTitle } : t))
     );
-    await updateTaskTitle(taskId, newTitle);
+    await updateTaskTitle(taskId, newTitle, currentDate);
   };
 
   // Handler: Update Category with optimistic update
@@ -106,19 +105,19 @@ export default function App() {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, category: newCategory } : t))
     );
-    await updateTaskCategory(taskId, newCategory);
+    await updateTaskCategory(taskId, newCategory, currentDate);
   };
 
   // Handler: Delete task with optimistic update
   const handleDeleteTask = async (taskId) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
-    await deleteTask(taskId);
+    await deleteTask(taskId, currentDate);
   };
 
   // Handler: Reorder tasks
   const handleReorderTasks = async (reorderedTasks) => {
     setTasks(reorderedTasks);
-    await saveTaskOrders(reorderedTasks);
+    await saveTaskOrders(reorderedTasks, currentDate);
   };
 
   const completedCount = tasks.filter((t) => t.completed).length;
@@ -148,7 +147,7 @@ export default function App() {
         {loading ? (
           <div className="py-12 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div className="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Loading daily workflow...</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Syncing with Realtime Database...</p>
           </div>
         ) : (
           <TaskSection

@@ -1,13 +1,4 @@
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  setDoc,
-  onSnapshot,
-  serverTimestamp
-} from 'firebase/firestore';
+import { ref, onValue, set } from 'firebase/database';
 import { db, isFirebaseConfigured } from '../firebase';
 
 const LOCAL_STORAGE_KEY = 'daily_flow_reflections_v1';
@@ -32,24 +23,29 @@ const saveLocalReflection = (date, winText) => {
 };
 
 /**
- * Subscribe to reflection for a specific date
+ * Subscribe to reflection for a specific date via Realtime Database
  */
 export const subscribeToReflection = (selectedDate, onUpdate) => {
   if (isFirebaseConfigured && db) {
     try {
-      const docRef = doc(db, 'reflections', selectedDate);
-      const unsubscribe = onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-          onUpdate(docSnap.data().winText || '');
-        } else {
-          // Check fallback query if doc ID wasn't date formatted
+      const reflectionRef = ref(db, `reflections/${selectedDate}`);
+      const unsubscribe = onValue(
+        reflectionRef,
+        (snapshot) => {
+          const val = snapshot.val();
+          if (val && typeof val.winText === 'string') {
+            onUpdate(val.winText);
+          } else {
+            onUpdate(getLocalReflections()[selectedDate] || '');
+          }
+        },
+        (err) => {
+          console.warn('Realtime DB reflection error, using local:', err);
           onUpdate(getLocalReflections()[selectedDate] || '');
         }
-      }, (err) => {
-        console.warn('Reflection snapshot error, using local:', err);
-        onUpdate(getLocalReflections()[selectedDate] || '');
-      });
-      return unsubscribe;
+      );
+
+      return () => unsubscribe();
     } catch (e) {
       onUpdate(getLocalReflections()[selectedDate] || '');
       return () => {};
@@ -73,14 +69,14 @@ export const saveReflection = async (selectedDate, winText) => {
 
   if (isFirebaseConfigured && db) {
     try {
-      const docRef = doc(db, 'reflections', selectedDate);
-      await setDoc(docRef, {
+      const reflectionRef = ref(db, `reflections/${selectedDate}`);
+      await set(reflectionRef, {
         date: selectedDate,
         winText,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+        updatedAt: Date.now()
+      });
     } catch (err) {
-      console.error('Firestore saveReflection error:', err);
+      console.error('Realtime DB saveReflection error:', err);
     }
   }
 };

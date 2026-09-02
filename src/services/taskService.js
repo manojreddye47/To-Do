@@ -1,16 +1,11 @@
 import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  orderBy,
-  writeBatch
-} from 'firebase/firestore';
+  ref,
+  onValue,
+  push,
+  set,
+  update,
+  remove
+} from 'firebase/database';
 import { db, isFirebaseConfigured } from '../firebase';
 
 const LOCAL_STORAGE_KEY = 'daily_flow_tasks_v1';
@@ -91,24 +86,26 @@ const seedInitialDataIfNeeded = () => {
 };
 
 /**
- * Subscribe to tasks for a specific date (YYYY-MM-DD).
+ * Subscribe to tasks for a specific date (YYYY-MM-DD) via Firebase Realtime Database.
  * Returns an unsubscribe function.
  */
 export const subscribeToTasks = (selectedDate, onUpdate, onError) => {
   if (isFirebaseConfigured && db) {
     try {
-      const tasksRef = collection(db, 'tasks');
-      const q = query(
-        tasksRef,
-        where('date', '==', selectedDate)
-      );
+      const dateTasksRef = ref(db, `tasks/${selectedDate}`);
 
-      const unsubscribe = onSnapshot(
-        q,
+      const unsubscribe = onValue(
+        dateTasksRef,
         (snapshot) => {
-          const tasksList = snapshot.docs.map((docSnap) => ({
-            id: docSnap.id,
-            ...docSnap.data(),
+          const val = snapshot.val();
+          if (!val) {
+            onUpdate([]);
+            return;
+          }
+
+          const tasksList = Object.keys(val).map((key) => ({
+            id: key,
+            ...val[key],
           }));
 
           // Sort in memory by order or createdAt
@@ -116,21 +113,21 @@ export const subscribeToTasks = (selectedDate, onUpdate, onError) => {
             if (a.order !== undefined && b.order !== undefined) {
               return a.order - b.order;
             }
-            return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+            return (a.createdAt || 0) - (b.createdAt || 0);
           });
 
           onUpdate(tasksList);
         },
         (error) => {
-          console.warn('Firestore snapshot error, falling back to local storage:', error);
+          console.warn('Realtime Database listener error, falling back to local storage:', error);
           if (onError) onError(error);
           fallbackLocalSubscribe(selectedDate, onUpdate);
         }
       );
 
-      return unsubscribe;
+      return () => unsubscribe();
     } catch (err) {
-      console.warn('Error subscribing to Firestore, falling back to local:', err);
+      console.warn('Error subscribing to Realtime Database, falling back to local:', err);
       return fallbackLocalSubscribe(selectedDate, onUpdate);
     }
   } else {
@@ -150,7 +147,6 @@ const fallbackLocalSubscribe = (selectedDate, onUpdate) => {
 
   notify();
 
-  // Listen to window custom storage events
   const handleStorage = () => notify();
   window.addEventListener('daily_flow_tasks_updated', handleStorage);
 
@@ -172,19 +168,20 @@ export const addTask = async ({ title, category, date }) => {
 
   if (isFirebaseConfigured && db) {
     try {
-      // Calculate highest order
-      const tasksRef = collection(db, 'tasks');
-      const docRef = await addDoc(tasksRef, {
+      const dateTasksRef = ref(db, `tasks/${date}`);
+      const newTaskRef = push(dateTasksRef);
+      const newTaskObj = {
         title: cleanedTitle,
         category, // 'top3' or 'secondary'
         completed: false,
         date, // YYYY-MM-DD
         order: Date.now(),
-        createdAt: serverTimestamp(),
-      });
-      return { id: docRef.id, title: cleanedTitle, category, completed: false, date };
+        createdAt: Date.now(),
+      };
+      await set(newTaskRef, newTaskObj);
+      return { id: newTaskRef.key, ...newTaskObj };
     } catch (err) {
-      console.error('Firestore addTask failed, writing locally:', err);
+      console.error('Realtime DB addTask failed, writing locally:', err);
     }
   }
 
@@ -197,7 +194,7 @@ export const addTask = async ({ title, category, date }) => {
     completed: false,
     date,
     order: Date.now(),
-    createdAt: new Date().toISOString(),
+    createdAt: Date.now(),
   };
 
   localTasks.push(newTask);
@@ -209,16 +206,16 @@ export const addTask = async ({ title, category, date }) => {
 /**
  * Toggle completed state
  */
-export const toggleTaskCompleted = async (taskId, currentCompletedState) => {
+export const toggleTaskCompleted = async (taskId, currentCompletedState, date) => {
   const newStatus = !currentCompletedState;
 
   if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
     try {
-      const taskRef = doc(db, 'tasks', taskId);
-      await updateDoc(taskRef, { completed: newStatus });
+      const taskRef = ref(db, `tasks/${date}/${taskId}`);
+      await update(taskRef, { completed: newStatus });
       return;
     } catch (err) {
-      console.error('Firestore toggleTaskCompleted error:', err);
+      console.error('Realtime DB toggleTaskCompleted error:', err);
     }
   }
 
@@ -232,17 +229,17 @@ export const toggleTaskCompleted = async (taskId, currentCompletedState) => {
 /**
  * Update task title inline
  */
-export const updateTaskTitle = async (taskId, newTitle) => {
+export const updateTaskTitle = async (taskId, newTitle, date) => {
   const cleaned = newTitle.trim();
   if (!cleaned) return;
 
   if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
     try {
-      const taskRef = doc(db, 'tasks', taskId);
-      await updateDoc(taskRef, { title: cleaned });
+      const taskRef = ref(db, `tasks/${date}/${taskId}`);
+      await update(taskRef, { title: cleaned });
       return;
     } catch (err) {
-      console.error('Firestore updateTaskTitle error:', err);
+      console.error('Realtime DB updateTaskTitle error:', err);
     }
   }
 
@@ -255,14 +252,14 @@ export const updateTaskTitle = async (taskId, newTitle) => {
 /**
  * Move task between categories ('top3' <-> 'secondary')
  */
-export const updateTaskCategory = async (taskId, newCategory) => {
+export const updateTaskCategory = async (taskId, newCategory, date) => {
   if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
     try {
-      const taskRef = doc(db, 'tasks', taskId);
-      await updateDoc(taskRef, { category: newCategory });
+      const taskRef = ref(db, `tasks/${date}/${taskId}`);
+      await update(taskRef, { category: newCategory });
       return;
     } catch (err) {
-      console.error('Firestore updateTaskCategory error:', err);
+      console.error('Realtime DB updateTaskCategory error:', err);
     }
   }
 
@@ -275,14 +272,14 @@ export const updateTaskCategory = async (taskId, newCategory) => {
 /**
  * Delete task
  */
-export const deleteTask = async (taskId) => {
+export const deleteTask = async (taskId, date) => {
   if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
     try {
-      const taskRef = doc(db, 'tasks', taskId);
-      await deleteDoc(taskRef);
+      const taskRef = ref(db, `tasks/${date}/${taskId}`);
+      await remove(taskRef);
       return;
     } catch (err) {
-      console.error('Firestore deleteTask error:', err);
+      console.error('Realtime DB deleteTask error:', err);
     }
   }
 
@@ -295,23 +292,25 @@ export const deleteTask = async (taskId) => {
 /**
  * Save reordered list of tasks
  */
-export const saveTaskOrders = async (reorderedTasks) => {
-  if (isFirebaseConfigured && db) {
+export const saveTaskOrders = async (reorderedTasks, date) => {
+  if (isFirebaseConfigured && db && date) {
     try {
-      const batch = writeBatch(db);
+      const updates = {};
       reorderedTasks.forEach((task, index) => {
         if (!task.id.startsWith('local-') && !task.id.startsWith('seed-')) {
-          const ref = doc(db, 'tasks', task.id);
-          batch.update(ref, { order: index, category: task.category });
+          updates[`tasks/${date}/${task.id}/order`] = index;
+          updates[`tasks/${date}/${task.id}/category`] = task.category;
         }
       });
-      await batch.commit();
+      if (Object.keys(updates).length > 0) {
+        await update(ref(db), updates);
+      }
     } catch (err) {
-      console.error('Firestore batch reorder error:', err);
+      console.error('Realtime DB batch reorder error:', err);
     }
   }
 
-  // Sync to local as well
+  // Sync to local
   const allTasks = getLocalTasks();
   const reorderedMap = new Map(reorderedTasks.map((t, idx) => [t.id, { order: idx, category: t.category }]));
 
