@@ -29,62 +29,6 @@ const saveLocalTasks = (tasks) => {
   }
 };
 
-// Default seed data for brand-new users in demo mode
-const seedInitialDataIfNeeded = () => {
-  const existing = getLocalTasks();
-  if (existing.length === 0) {
-    const today = new Date().toISOString().split('T')[0];
-    const initialTasks = [
-      {
-        id: 'seed-1',
-        title: 'Review quarterly strategy document',
-        category: 'top3',
-        completed: false,
-        date: today,
-        order: 0,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'seed-2',
-        title: 'Conduct team sync meeting',
-        category: 'top3',
-        completed: true,
-        date: today,
-        order: 1,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'seed-3',
-        title: 'Finalize UI design mockup for mobile',
-        category: 'top3',
-        completed: false,
-        date: today,
-        order: 2,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'seed-4',
-        title: 'Clear email inbox & reply to clients',
-        category: 'secondary',
-        completed: true,
-        date: today,
-        order: 0,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'seed-5',
-        title: '30-minute afternoon workout',
-        category: 'secondary',
-        completed: false,
-        date: today,
-        order: 1,
-        createdAt: new Date().toISOString()
-      }
-    ];
-    saveLocalTasks(initialTasks);
-  }
-};
-
 /**
  * Subscribe to tasks for a specific date (YYYY-MM-DD) via Firebase Realtime Database.
  * Returns an unsubscribe function.
@@ -119,7 +63,8 @@ export const subscribeToTasks = (selectedDate, onUpdate, onError) => {
           onUpdate(tasksList);
         },
         (error) => {
-          console.warn('Realtime Database listener error, falling back to local storage:', error);
+          console.error('[Daily Flow] Realtime Database error:', error);
+          window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: error }));
           if (onError) onError(error);
           fallbackLocalSubscribe(selectedDate, onUpdate);
         }
@@ -127,7 +72,7 @@ export const subscribeToTasks = (selectedDate, onUpdate, onError) => {
 
       return () => unsubscribe();
     } catch (err) {
-      console.warn('Error subscribing to Realtime Database, falling back to local:', err);
+      console.error('[Daily Flow] Error subscribing to Realtime Database:', err);
       return fallbackLocalSubscribe(selectedDate, onUpdate);
     }
   } else {
@@ -136,7 +81,6 @@ export const subscribeToTasks = (selectedDate, onUpdate, onError) => {
 };
 
 const fallbackLocalSubscribe = (selectedDate, onUpdate) => {
-  seedInitialDataIfNeeded();
   const notify = () => {
     const allTasks = getLocalTasks();
     const filtered = allTasks
@@ -160,7 +104,7 @@ const triggerLocalUpdateEvent = () => {
 };
 
 /**
- * Add a new task
+ * Add a new task directly to Firebase Realtime Database
  */
 export const addTask = async ({ title, category, date }) => {
   const cleanedTitle = title.trim();
@@ -181,7 +125,8 @@ export const addTask = async ({ title, category, date }) => {
       await set(newTaskRef, newTaskObj);
       return { id: newTaskRef.key, ...newTaskObj };
     } catch (err) {
-      console.error('Realtime DB addTask failed, writing locally:', err);
+      console.error('[Daily Flow] Realtime DB addTask failed:', err);
+      window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: err }));
     }
   }
 
@@ -204,18 +149,19 @@ export const addTask = async ({ title, category, date }) => {
 };
 
 /**
- * Toggle completed state
+ * Toggle completed state in Realtime Database
  */
 export const toggleTaskCompleted = async (taskId, currentCompletedState, date) => {
   const newStatus = !currentCompletedState;
 
-  if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
+  if (isFirebaseConfigured && db) {
     try {
       const taskRef = ref(db, `tasks/${date}/${taskId}`);
       await update(taskRef, { completed: newStatus });
       return;
     } catch (err) {
-      console.error('Realtime DB toggleTaskCompleted error:', err);
+      console.error('[Daily Flow] Realtime DB toggleTaskCompleted error:', err);
+      window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: err }));
     }
   }
 
@@ -227,19 +173,20 @@ export const toggleTaskCompleted = async (taskId, currentCompletedState, date) =
 };
 
 /**
- * Update task title inline
+ * Update task title inline in Realtime Database
  */
 export const updateTaskTitle = async (taskId, newTitle, date) => {
   const cleaned = newTitle.trim();
   if (!cleaned) return;
 
-  if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
+  if (isFirebaseConfigured && db) {
     try {
       const taskRef = ref(db, `tasks/${date}/${taskId}`);
       await update(taskRef, { title: cleaned });
       return;
     } catch (err) {
-      console.error('Realtime DB updateTaskTitle error:', err);
+      console.error('[Daily Flow] Realtime DB updateTaskTitle error:', err);
+      window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: err }));
     }
   }
 
@@ -250,16 +197,17 @@ export const updateTaskTitle = async (taskId, newTitle, date) => {
 };
 
 /**
- * Move task between categories ('top3' <-> 'secondary')
+ * Move task between categories ('top3' <-> 'secondary') in Realtime Database
  */
 export const updateTaskCategory = async (taskId, newCategory, date) => {
-  if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
+  if (isFirebaseConfigured && db) {
     try {
       const taskRef = ref(db, `tasks/${date}/${taskId}`);
       await update(taskRef, { category: newCategory });
       return;
     } catch (err) {
-      console.error('Realtime DB updateTaskCategory error:', err);
+      console.error('[Daily Flow] Realtime DB updateTaskCategory error:', err);
+      window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: err }));
     }
   }
 
@@ -270,16 +218,17 @@ export const updateTaskCategory = async (taskId, newCategory, date) => {
 };
 
 /**
- * Delete task
+ * Delete task from Realtime Database (removes key completely under tasks/date/taskId)
  */
 export const deleteTask = async (taskId, date) => {
-  if (isFirebaseConfigured && db && !taskId.startsWith('local-') && !taskId.startsWith('seed-')) {
+  if (isFirebaseConfigured && db) {
     try {
       const taskRef = ref(db, `tasks/${date}/${taskId}`);
       await remove(taskRef);
       return;
     } catch (err) {
-      console.error('Realtime DB deleteTask error:', err);
+      console.error('[Daily Flow] Realtime DB deleteTask error:', err);
+      window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: err }));
     }
   }
 
@@ -290,23 +239,22 @@ export const deleteTask = async (taskId, date) => {
 };
 
 /**
- * Save reordered list of tasks
+ * Save reordered list of tasks in Realtime Database
  */
 export const saveTaskOrders = async (reorderedTasks, date) => {
   if (isFirebaseConfigured && db && date) {
     try {
       const updates = {};
       reorderedTasks.forEach((task, index) => {
-        if (!task.id.startsWith('local-') && !task.id.startsWith('seed-')) {
-          updates[`tasks/${date}/${task.id}/order`] = index;
-          updates[`tasks/${date}/${task.id}/category`] = task.category;
-        }
+        updates[`tasks/${date}/${task.id}/order`] = index;
+        updates[`tasks/${date}/${task.id}/category`] = task.category;
       });
       if (Object.keys(updates).length > 0) {
         await update(ref(db), updates);
       }
     } catch (err) {
-      console.error('Realtime DB batch reorder error:', err);
+      console.error('[Daily Flow] Realtime DB batch reorder error:', err);
+      window.dispatchEvent(new CustomEvent('daily_flow_firebase_error', { detail: err }));
     }
   }
 

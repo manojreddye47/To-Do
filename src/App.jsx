@@ -7,6 +7,7 @@ import TaskSection from './components/TaskSection';
 import QuickAddBar from './components/QuickAddBar';
 import ReflectionBox from './components/ReflectionBox';
 import FirebaseModal from './components/FirebaseModal';
+import { AlertTriangle, X } from 'lucide-react';
 
 import {
   subscribeToTasks,
@@ -41,6 +42,7 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState(false);
+  const [fbError, setFbError] = useState(null);
 
   const quickAddInputRef = useRef(null);
 
@@ -54,6 +56,17 @@ export default function App() {
       localStorage.setItem('daily_flow_theme', 'light');
     }
   }, [darkMode]);
+
+  // Listen to custom firebase errors
+  useEffect(() => {
+    const handleFbErr = (e) => {
+      if (e.detail) {
+        setFbError(e.detail.message || String(e.detail));
+      }
+    };
+    window.addEventListener('daily_flow_firebase_error', handleFbErr);
+    return () => window.removeEventListener('daily_flow_firebase_error', handleFbErr);
+  }, []);
 
   // Subscribe to real-time tasks for currentDate
   useEffect(() => {
@@ -134,6 +147,29 @@ export default function App() {
 
       {/* Main Workspace */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 pb-28">
+        {/* Permission / Connection Warning Banner if DB rules lock writes */}
+        {fbError && (
+          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 rounded-xl border border-rose-200 dark:border-rose-800 text-xs flex items-start justify-between gap-3 shadow-xs">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Realtime Database Sync Warning</p>
+                <p className="mt-0.5 opacity-90 leading-relaxed">
+                  {fbError.includes('permission_denied') || fbError.includes('PERMISSION_DENIED')
+                    ? "Firebase denied permission! In your Firebase Console -> Realtime Database -> Rules tab, ensure '.read': true and '.write': true are set."
+                    : fbError}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setFbError(null)}
+              className="p-1 text-rose-500 hover:text-rose-700 dark:hover:text-rose-100 shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Date Navigator */}
         <DateNavigator currentDate={currentDate} setCurrentDate={setCurrentDate} />
 
