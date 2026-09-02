@@ -5,6 +5,7 @@ import ProgressBar from './components/ProgressBar';
 import StatsOverview from './components/StatsOverview';
 import FilterSearchBar from './components/FilterSearchBar';
 import TaskSection from './components/TaskSection';
+import Top3ContributionGraph from './components/Top3ContributionGraph';
 import QuickAddBar from './components/QuickAddBar';
 import ReflectionBox from './components/ReflectionBox';
 import FirebaseModal from './components/FirebaseModal';
@@ -270,6 +271,9 @@ export default function App() {
             onQuickAddFocus={() => quickAddInputRef.current?.focus()}
           />
         )}
+
+        {/* GitHub / LeetCode Style Top 3 Activity Heat Map */}
+        <Top3ContributionGraph allTasks={allTasks} currentDate={currentDate} />
 
         {/* Daily Reflection / Win Journal Box */}
         <ReflectionBox currentDate={currentDate} />
