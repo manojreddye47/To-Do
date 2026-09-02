@@ -4,7 +4,8 @@ import {
   push,
   set,
   update,
-  remove
+  remove,
+  get
 } from 'firebase/database';
 import { db, isFirebaseConfigured } from '../firebase';
 
@@ -104,7 +105,136 @@ const triggerLocalUpdateEvent = () => {
 };
 
 /**
- * Add a new task directly to Firebase Realtime Database
+ * Fetch all tasks across all dates (for analytics and rollover checks)
+ */
+export const fetchAllTasks = async () => {
+  if (isFirebaseConfigured && db) {
+    try {
+      const rootTasksRef = ref(db, 'tasks');
+      const snapshot = await get(rootTasksRef);
+      const val = snapshot.val();
+      if (!val) return getLocalTasks();
+
+      const all = [];
+      Object.keys(val).forEach((dateKey) => {
+        const dateObj = val[dateKey];
+        if (dateObj && typeof dateObj === 'object') {
+          Object.keys(dateObj).forEach((taskId) => {
+            all.push({
+              id: taskId,
+              date: dateKey,
+              ...dateObj[taskId]
+            });
+          });
+        }
+      });
+      return all;
+    } catch (err) {
+      console.error('[Daily Flow] fetchAllTasks failed, using local:', err);
+      return getLocalTasks();
+    }
+  }
+  return getLocalTasks();
+};
+
+/**
+ * Migrate unfinished tasks from past dates (date < todayDate) to today's date
+ */
+export const migrateUnfinishedTasks = async (todayDate) => {
+  const allTasks = await fetchAllTasks();
+  const unfinishedPast = allTasks.filter((t) => t.date < todayDate && !t.completed);
+
+  if (unfinishedPast.length === 0) return 0;
+
+  if (isFirebaseConfigured && db) {
+    try {
+      const updates = {};
+      unfinishedPast.forEach((t) => {
+        // Remove from old date path
+        updates[`tasks/${t.date}/${t.id}`] = null;
+        // Add to today's path
+        updates[`tasks/${todayDate}/${t.id}`] = {
+          title: t.title,
+          category: t.category,
+          completed: false,
+          date: todayDate,
+          order: Date.now() + Math.floor(Math.random() * 1000),
+          createdAt: t.createdAt || Date.now()
+        };
+      });
+      await update(ref(db), updates);
+    } catch (err) {
+      console.error('[Daily Flow] migrateUnfinishedTasks failed in DB:', err);
+    }
+  }
+
+  // Update local storage
+  const local = getLocalTasks();
+  const updatedLocal = local.map((t) => {
+    if (t.date < todayDate && !t.completed) {
+      return { ...t, date: todayDate };
+    }
+    return t;
+  });
+  saveLocalTasks(updatedLocal);
+  triggerLocalUpdateEvent();
+
+  return unfinishedPast.length;
+};
+
+/**
+ * Calculate consecutive completed days streak
+ */
+export const calculateStreak = (allTasks, todayDate) => {
+  if (!allTasks || allTasks.length === 0) return 0;
+
+  // Group tasks by date
+  const byDate = {};
+  allTasks.forEach((t) => {
+    if (!byDate[t.date]) byDate[t.date] = [];
+    byDate[t.date].push(t);
+  });
+
+  const checkDayCompleted = (dateStr) => {
+    const dayTasks = byDate[dateStr];
+    if (!dayTasks || dayTasks.length === 0) return false;
+    const top3 = dayTasks.filter((t) => t.category === 'top3');
+    if (top3.length > 0) {
+      return top3.every((t) => t.completed);
+    }
+    return dayTasks.every((t) => t.completed);
+  };
+
+  let streak = 0;
+  let curr = new Date(todayDate);
+
+  // Check today first
+  const todayCompleted = checkDayCompleted(todayDate);
+  if (todayCompleted) {
+    streak++;
+  }
+
+  // Count backwards starting yesterday
+  curr.setDate(curr.getDate() - 1);
+  while (true) {
+    const year = curr.getFullYear();
+    const month = String(curr.getMonth() + 1).padStart(2, '0');
+    const day = String(curr.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    if (checkDayCompleted(dateStr)) {
+      streak++;
+      curr.setDate(curr.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+};
+
+/**
+ * Add a new task
  */
 export const addTask = async ({ title, category, date }) => {
   const cleanedTitle = title.trim();
@@ -116,9 +246,9 @@ export const addTask = async ({ title, category, date }) => {
       const newTaskRef = push(dateTasksRef);
       const newTaskObj = {
         title: cleanedTitle,
-        category, // 'top3' or 'secondary'
+        category,
         completed: false,
-        date, // YYYY-MM-DD
+        date,
         order: Date.now(),
         createdAt: Date.now(),
       };
@@ -130,7 +260,6 @@ export const addTask = async ({ title, category, date }) => {
     }
   }
 
-  // Fallback / Local
   const localTasks = getLocalTasks();
   const newTask = {
     id: `local-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -149,7 +278,7 @@ export const addTask = async ({ title, category, date }) => {
 };
 
 /**
- * Toggle completed state in Realtime Database
+ * Toggle completed state
  */
 export const toggleTaskCompleted = async (taskId, currentCompletedState, date) => {
   const newStatus = !currentCompletedState;
@@ -165,7 +294,6 @@ export const toggleTaskCompleted = async (taskId, currentCompletedState, date) =
     }
   }
 
-  // Fallback / Local
   const tasks = getLocalTasks();
   const updated = tasks.map((t) => (t.id === taskId ? { ...t, completed: newStatus } : t));
   saveLocalTasks(updated);
@@ -173,7 +301,7 @@ export const toggleTaskCompleted = async (taskId, currentCompletedState, date) =
 };
 
 /**
- * Update task title inline in Realtime Database
+ * Update task title inline
  */
 export const updateTaskTitle = async (taskId, newTitle, date) => {
   const cleaned = newTitle.trim();
@@ -197,7 +325,7 @@ export const updateTaskTitle = async (taskId, newTitle, date) => {
 };
 
 /**
- * Move task between categories ('top3' <-> 'secondary') in Realtime Database
+ * Move task between categories
  */
 export const updateTaskCategory = async (taskId, newCategory, date) => {
   if (isFirebaseConfigured && db) {
@@ -218,7 +346,7 @@ export const updateTaskCategory = async (taskId, newCategory, date) => {
 };
 
 /**
- * Delete task from Realtime Database (removes key completely under tasks/date/taskId)
+ * Delete task
  */
 export const deleteTask = async (taskId, date) => {
   if (isFirebaseConfigured && db) {
@@ -239,7 +367,7 @@ export const deleteTask = async (taskId, date) => {
 };
 
 /**
- * Save reordered list of tasks in Realtime Database
+ * Save reordered list of tasks
  */
 export const saveTaskOrders = async (reorderedTasks, date) => {
   if (isFirebaseConfigured && db && date) {
@@ -258,7 +386,6 @@ export const saveTaskOrders = async (reorderedTasks, date) => {
     }
   }
 
-  // Sync to local
   const allTasks = getLocalTasks();
   const reorderedMap = new Map(reorderedTasks.map((t, idx) => [t.id, { order: idx, category: t.category }]));
 
