@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { Play, Pause, RotateCcw, CheckCircle2, Flame, Sparkles, ChevronDown } from 'lucide-react';
+import { Play, Pause, RotateCcw, CheckCircle2, Flame, ChevronDown } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import hanumanArtwork from '../assets/hanuman_focus_artwork.jpg';
 
@@ -148,11 +148,16 @@ export default function HanumanFocusCard({
 
           {/* Current Task Priority Badge */}
           <div className="flex items-center justify-center gap-2">
+            {isBajrangMode && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black font-mono uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-xs">
+                ⚡ BAJRANG FOCUS
+              </span>
+            )}
             <span
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold font-mono uppercase tracking-wide ${
                 currentTask.category === 'top3'
                   ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30'
-                  : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/30'
+                  : 'bg-amber-50 dark:bg-slate-800/80 text-stone-700 dark:text-slate-300 border border-amber-200 dark:border-slate-700'
               }`}
             >
               {currentTask.category === 'top3' ? <Flame className="w-3.5 h-3.5" /> : null}

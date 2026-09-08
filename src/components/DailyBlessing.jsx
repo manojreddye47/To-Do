@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, Flame } from 'lucide-react';
+import { X, Flame } from 'lucide-react';
 
 const BLESSINGS = [
   {

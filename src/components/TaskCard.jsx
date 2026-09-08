@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { Check, Trash2, Edit3, GripVertical, ArrowUpRight, ArrowDownRight, Flame } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, ArrowUpRight, ArrowDownRight, Flame } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function TaskCard({
@@ -128,13 +128,24 @@ export default function TaskCard({
         }`}
         aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
       >
-        <motion.div
-          initial={false}
-          animate={{ scale: task.completed ? 1 : 0 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-        >
-          <Check className="w-3.5 h-3.5 stroke-[3]" />
-        </motion.div>
+        <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
+          <motion.path
+            d="M5 13l4 4L19 7"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={false}
+            animate={{
+              pathLength: task.completed ? 1 : 0,
+              opacity: task.completed ? 1 : 0
+            }}
+            transition={{
+              pathLength: { type: 'spring', stiffness: 450, damping: 28 },
+              opacity: { duration: 0.15 }
+            }}
+          />
+        </svg>
       </button>
 
       {/* Title & Inline Edit */}
@@ -147,21 +158,31 @@ export default function TaskCard({
             onChange={(e) => setEditedTitle(e.target.value)}
             onBlur={handleSaveTitle}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-indigo-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-sans"
+            className="w-full px-3 py-1.5 text-sm bg-white dark:bg-slate-800 text-stone-900 dark:text-slate-100 border border-amber-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 font-sans"
           />
         ) : (
           <div className="flex items-center gap-2">
-            <span
-              onDoubleClick={() => setIsEditing(true)}
-              className={`text-sm font-semibold leading-relaxed truncate cursor-pointer select-none transition-all duration-300 ${
-                task.completed
-                  ? 'line-through text-slate-400 dark:text-slate-500 font-normal'
-                  : 'text-slate-800 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400'
-              }`}
-              title="Double click to edit title"
-            >
-              {task.title}
-            </span>
+            <div className="relative inline-block max-w-full">
+              <span
+                onDoubleClick={() => setIsEditing(true)}
+                className={`text-sm font-semibold leading-relaxed truncate block cursor-pointer select-none transition-colors duration-300 ${
+                  task.completed
+                    ? 'text-stone-400 dark:text-slate-500 font-normal'
+                    : 'text-stone-800 dark:text-slate-100 hover:text-amber-600 dark:hover:text-amber-400'
+                }`}
+                title="Double click to edit title"
+              >
+                {task.title}
+              </span>
+              <motion.span
+                aria-hidden="true"
+                initial={false}
+                animate={{ scaleX: task.completed ? 1 : 0 }}
+                transition={{ duration: 0.28, ease: 'easeInOut' }}
+                style={{ originX: 0 }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-[1.5px] w-full bg-stone-400 dark:bg-slate-500 pointer-events-none rounded-full"
+              />
+            </div>
 
             {isTop3 && !task.completed && (
               <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
@@ -183,17 +204,17 @@ export default function TaskCard({
               }
               onUpdateCategory(task.id, isTop3 ? 'secondary' : 'top3');
             }}
-            className={`p-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
+            className={`p-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${
               isTop3
-                ? 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                : 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60'
+                ? 'text-stone-500 dark:text-slate-400 hover:bg-stone-100 dark:hover:bg-slate-800'
+                : 'text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60'
             }`}
             title={isTop3 ? "Demote to Secondary Tasks" : "Promote to Top 3 Priority"}
           >
             {isTop3 ? (
-              <ArrowDownRight className="w-3.5 h-3.5 text-slate-400" />
+              <ArrowDownRight className="w-3.5 h-3.5 text-stone-400" />
             ) : (
-              <ArrowUpRight className="w-3.5 h-3.5 text-indigo-500" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             )}
           </button>
         )}

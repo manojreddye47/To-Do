@@ -1,4 +1,4 @@
-import React, { useState, forwardRef } from 'react';
+import React, { useState, forwardRef, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Flame, ListTodo } from 'lucide-react';
 
@@ -9,8 +9,32 @@ const QuickAddBar = forwardRef(function QuickAddBar(
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(top3Count < 3 ? 'top3' : 'secondary');
   const [magneticPos, setMagneticPos] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(true);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const lastScrollY = useRef(0);
 
   const isTop3Full = top3Count >= 3;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDiff = currentScrollY - lastScrollY.current;
+      const isNearBottom = window.innerHeight + currentScrollY >= document.documentElement.scrollHeight - 60;
+
+      if (isInputFocused || isNearBottom || currentScrollY < 60) {
+        setIsVisible(true);
+      } else if (scrollDiff > 14 && currentScrollY > 120) {
+        setIsVisible(false);
+      } else if (scrollDiff < -8) {
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isInputFocused]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -51,9 +75,15 @@ const QuickAddBar = forwardRef(function QuickAddBar(
   };
 
   return (
-    <form
+    <motion.form
       onSubmit={handleSubmit}
-      className="sticky bottom-4 z-20 max-w-5xl mx-auto px-4 sm:px-0"
+      onMouseEnter={() => setIsVisible(true)}
+      animate={{
+        y: isVisible ? 0 : 54,
+        opacity: isVisible ? 1 : 0.3
+      }}
+      transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+      className="sticky bottom-4 z-20 max-w-5xl mx-auto px-4 sm:px-0 safe-bottom"
     >
       <div className="glass-dock p-2.5 sm:p-3 rounded-3xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 transition-all duration-300">
         {/* Category Pills Selector */}
@@ -98,6 +128,11 @@ const QuickAddBar = forwardRef(function QuickAddBar(
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onFocus={() => {
+              setIsInputFocused(true);
+              setIsVisible(true);
+            }}
+            onBlur={() => setIsInputFocused(false)}
             placeholder={`Add a new ${category === 'top3' ? 'Top 3 priority' : 'secondary task'} for ${currentDate}...`}
             className="w-full px-4 py-2 text-sm bg-amber-50/50 dark:bg-slate-800/60 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-slate-400 rounded-2xl border border-amber-300/40 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all font-sans"
           />
@@ -117,7 +152,7 @@ const QuickAddBar = forwardRef(function QuickAddBar(
           <span>Add Task</span>
         </motion.button>
       </div>
-    </form>
+    </motion.form>
   );
 });
 

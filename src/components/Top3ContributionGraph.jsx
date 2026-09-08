@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Flame, Sparkles, Calendar, Zap, CheckCircle2 } from 'lucide-react';
+import { Trophy, Flame, Sparkles } from 'lucide-react';
 
 export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
   const [hoveredCell, setHoveredCell] = useState(null);
@@ -21,7 +21,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     }
   });
 
-  const endDate = new Date(today);
   const startDate = new Date(today);
   startDate.setDate(startDate.getDate() - (52 * 7 - 1));
 

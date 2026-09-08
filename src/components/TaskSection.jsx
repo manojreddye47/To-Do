@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Flame, ListTodo, PlusCircle, Sparkles, ShieldAlert } from 'lucide-react';
+import { Flame, ListTodo, PlusCircle, Sparkles } from 'lucide-react';
 import TaskCard from './TaskCard';
 
 export default function TaskSection({

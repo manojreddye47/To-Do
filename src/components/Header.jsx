@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { NotebookPen, Sun, Moon, Database, ShieldCheck, BarChart3, Target, Command, Zap } from 'lucide-react';
+import { NotebookPen, Sun, Moon, ShieldCheck, BarChart3, Target, Command, Zap } from 'lucide-react';
 import { isFirebaseConfigured } from '../firebase';
 import StreakCounter from './StreakCounter';
 

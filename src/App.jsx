@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import DateNavigator from './components/DateNavigator';
@@ -137,6 +137,43 @@ export default function App() {
     return () => window.removeEventListener('daily_flow_firebase_error', handleFbErr);
   }, []);
 
+  const [navDirection, setNavDirection] = useState(0);
+
+  const handlePrevDay = useCallback(() => {
+    setNavDirection(-1);
+    setCurrentDate((prev) => {
+      const [y, m, d] = prev.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      dateObj.setDate(dateObj.getDate() - 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    });
+  }, []);
+
+  const handleNextDay = useCallback(() => {
+    setNavDirection(1);
+    setCurrentDate((prev) => {
+      const [y, m, d] = prev.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      dateObj.setDate(dateObj.getDate() + 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    });
+  }, []);
+
+  const handleSetDate = useCallback((newDate) => {
+    if (!newDate) return;
+    setCurrentDate((prev) => {
+      if (newDate === prev) return prev;
+      setNavDirection(newDate > prev ? 1 : -1);
+      return newDate;
+    });
+  }, []);
+
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -170,7 +207,7 @@ export default function App() {
         setIsFocusModeOpen(true);
       } else if (e.key.toLowerCase() === 't') {
         e.preventDefault();
-        setCurrentDate(getTodayISO());
+        handleSetDate(getTodayISO());
       } else if (e.key.toLowerCase() === 'i') {
         e.preventDefault();
         setIsAnalyticsModalOpen(true);
@@ -183,27 +220,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentDate]);
-
-  const handlePrevDay = () => {
-    const [y, m, d] = currentDate.split('-').map(Number);
-    const dateObj = new Date(y, m - 1, d);
-    dateObj.setDate(dateObj.getDate() - 1);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    setCurrentDate(`${year}-${month}-${day}`);
-  };
-
-  const handleNextDay = () => {
-    const [y, m, d] = currentDate.split('-').map(Number);
-    const dateObj = new Date(y, m - 1, d);
-    dateObj.setDate(dateObj.getDate() + 1);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    setCurrentDate(`${year}-${month}-${day}`);
-  };
+  }, [hanumanMode, handlePrevDay, handleNextDay, handleSetDate]);
 
   const refreshAllTasks = () => {
     fetchAllTasks().then((data) => setAllTasks(data));
@@ -310,6 +327,42 @@ export default function App() {
 
   const streakCount = calculateStreak(allTasks, currentDate);
 
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+  const rawOffsetX = cursorPos.x > 0 && !isMobile ? (cursorPos.x - (typeof window !== 'undefined' ? window.innerWidth : 1200) / 2) * 0.012 : 0;
+  const rawOffsetY = cursorPos.y > 0 && !isMobile ? (cursorPos.y - (typeof window !== 'undefined' ? window.innerHeight : 800) / 2) * 0.012 : 0;
+  const boundedParallaxX = Math.max(-18, Math.min(18, rawOffsetX));
+  const boundedParallaxY = Math.max(-18, Math.min(18, rawOffsetY));
+
+  const dayVariants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 32 : direction < 0 ? -32 : 0,
+      y: direction === 0 ? 12 : 0,
+      opacity: 0,
+      filter: 'blur(2px)'
+    }),
+    center: {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      filter: 'blur(0px)',
+      transition: {
+        type: 'spring',
+        stiffness: 340,
+        damping: 28
+      }
+    },
+    exit: (direction) => ({
+      x: direction > 0 ? -32 : direction < 0 ? 32 : 0,
+      y: direction === 0 ? -12 : 0,
+      opacity: 0,
+      filter: 'blur(2px)',
+      transition: {
+        duration: 0.18,
+        ease: 'easeOut'
+      }
+    })
+  };
+
   return (
     <div className="min-h-screen text-stone-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 relative">
       {/* CINEMATIC ENVIRONMENTAL BACKGROUND SYSTEM */}
@@ -320,17 +373,13 @@ export default function App() {
             darkMode ? 'opacity-0' : 'opacity-100'
           }`}
           style={{
-            transform: `translate3d(${
-              cursorPos.x > 0 ? (cursorPos.x - (typeof window !== 'undefined' ? window.innerWidth : 1200) / 2) * 0.006 : 0
-            }px, ${
-              cursorPos.y > 0 ? (cursorPos.y - (typeof window !== 'undefined' ? window.innerHeight : 800) / 2) * 0.006 : 0
-            }px, 0)`
+            transform: `translate3d(${boundedParallaxX}px, ${boundedParallaxY}px, 0)`
           }}
         >
           <img
             src={hanumanEnvLight}
             alt="Lord Hanuman Golden Sunrise Environment"
-            className="w-full h-full object-cover object-right lg:object-[center_right] scale-105"
+            className="w-full h-full object-cover object-right lg:object-[center_right] scale-105 animate-cloud-drift"
           />
           {/* Contrast-enhancing gradients for high readability of productivity panels */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#faf6f0]/95 via-[#faf6f0]/80 to-[#faf6f0]/25 lg:to-transparent" />
@@ -343,17 +392,13 @@ export default function App() {
             darkMode ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            transform: `translate3d(${
-              cursorPos.x > 0 ? (cursorPos.x - (typeof window !== 'undefined' ? window.innerWidth : 1200) / 2) * 0.006 : 0
-            }px, ${
-              cursorPos.y > 0 ? (cursorPos.y - (typeof window !== 'undefined' ? window.innerHeight : 800) / 2) * 0.006 : 0
-            }px, 0)`
+            transform: `translate3d(${boundedParallaxX}px, ${boundedParallaxY}px, 0)`
           }}
         >
           <img
             src={hanumanEnvDark}
             alt="Lord Hanuman Celestial Midnight Environment"
-            className="w-full h-full object-cover object-right lg:object-[center_right] scale-105"
+            className="w-full h-full object-cover object-right lg:object-[center_right] scale-105 animate-cloud-drift"
           />
           {/* Contrast-enhancing gradients for deep midnight immersion and high readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#070b14]/96 via-[#070b14]/85 to-[#070b14]/25 lg:to-transparent" />
@@ -434,7 +479,12 @@ export default function App() {
         )}
 
         {/* Date Navigator */}
-        <DateNavigator currentDate={currentDate} setCurrentDate={setCurrentDate} />
+        <DateNavigator
+          currentDate={currentDate}
+          setCurrentDate={handleSetDate}
+          onPrevDay={handlePrevDay}
+          onNextDay={handleNextDay}
+        />
 
         {/* CINEMATIC TODAY PROGRESS HERO CENTERPIECE */}
         <HeroSection
@@ -460,13 +510,14 @@ export default function App() {
         />
 
         {/* Day Content Transition Wrapper */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={navDirection}>
           <motion.div
             key={currentDate}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.25 }}
+            custom={navDirection}
+            variants={dayVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
           >
             {loading ? (
               <div className="py-16 text-center space-y-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg">

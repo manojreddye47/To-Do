@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
 
-export default function DateNavigator({ currentDate, setCurrentDate }) {
+export default function DateNavigator({ currentDate, setCurrentDate, onPrevDay, onNextDay }) {
   const dateInputRef = useRef(null);
 
   const formatDateString = (dateStr) => {
@@ -25,24 +25,32 @@ export default function DateNavigator({ currentDate, setCurrentDate }) {
 
   const isToday = currentDate === getTodayStr();
 
-  const handlePrevDay = () => {
-    const [y, m, d] = currentDate.split('-').map(Number);
-    const dateObj = new Date(y, m - 1, d);
-    dateObj.setDate(dateObj.getDate() - 1);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    setCurrentDate(`${year}-${month}-${day}`);
+  const handlePrev = () => {
+    if (onPrevDay) {
+      onPrevDay();
+    } else {
+      const [y, m, d] = currentDate.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      dateObj.setDate(dateObj.getDate() - 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      setCurrentDate(`${year}-${month}-${day}`);
+    }
   };
 
-  const handleNextDay = () => {
-    const [y, m, d] = currentDate.split('-').map(Number);
-    const dateObj = new Date(y, m - 1, d);
-    dateObj.setDate(dateObj.getDate() + 1);
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    setCurrentDate(`${year}-${month}-${day}`);
+  const handleNext = () => {
+    if (onNextDay) {
+      onNextDay();
+    } else {
+      const [y, m, d] = currentDate.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      dateObj.setDate(dateObj.getDate() + 1);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      setCurrentDate(`${year}-${month}-${day}`);
+    }
   };
 
   const handleTodayClick = () => {
@@ -98,14 +106,14 @@ export default function DateNavigator({ currentDate, setCurrentDate }) {
 
         <div className="flex items-center rounded-2xl bg-amber-100/60 dark:bg-slate-800/80 p-1 border border-amber-300/40 dark:border-slate-700/80">
           <button
-            onClick={handlePrevDay}
+            onClick={handlePrev}
             className="p-1.5 rounded-xl text-stone-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
             title="Previous Day (←)"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
-            onClick={handleNextDay}
+            onClick={handleNext}
             className="p-1.5 rounded-xl text-stone-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
             title="Next Day (→)"
           >
