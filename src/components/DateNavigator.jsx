@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
 
 export default function DateNavigator({ currentDate, setCurrentDate }) {
@@ -51,16 +50,16 @@ export default function DateNavigator({ currentDate, setCurrentDate }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-4 glass-panel rounded-3xl">
       {/* Date Title & Calendar Selector */}
       <div className="flex items-center gap-3">
         <div className="relative">
           <button
             onClick={() => dateInputRef.current?.showPicker?.() || dateInputRef.current?.click()}
-            className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors border border-slate-200 dark:border-slate-700 flex items-center gap-2 group cursor-pointer"
+            className="p-2.5 rounded-2xl bg-amber-100/70 dark:bg-slate-800/80 hover:bg-amber-200/80 dark:hover:bg-slate-700 text-stone-800 dark:text-slate-200 transition-colors border border-amber-300/50 dark:border-slate-700 flex items-center gap-2 group cursor-pointer shadow-xs"
             title="Choose specific date"
           >
-            <CalendarIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+            <CalendarIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
           </button>
           <input
             ref={dateInputRef}
@@ -73,11 +72,11 @@ export default function DateNavigator({ currentDate, setCurrentDate }) {
 
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 font-sans">
+            <h2 className="text-lg font-extrabold text-stone-900 dark:text-slate-100 font-sans tracking-tight">
               {formatDateString(currentDate)}
             </h2>
             {isToday && (
-              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black tracking-wide uppercase bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-500/30">
                 Today
               </span>
             )}
@@ -90,24 +89,24 @@ export default function DateNavigator({ currentDate, setCurrentDate }) {
         {!isToday && (
           <button
             onClick={handleTodayClick}
-            className="px-3 py-1.5 rounded-2xl text-xs font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors border border-indigo-200 dark:border-indigo-800 flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-2xl text-xs font-extrabold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-500/10 hover:bg-amber-200/90 dark:hover:bg-amber-500/20 transition-colors border border-amber-300/70 dark:border-amber-500/30 flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Today</span>
           </button>
         )}
 
-        <div className="flex items-center rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center rounded-2xl bg-amber-100/60 dark:bg-slate-800/80 p-1 border border-amber-300/40 dark:border-slate-700/80">
           <button
             onClick={handlePrevDay}
-            className="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-95"
+            className="p-1.5 rounded-xl text-stone-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
             title="Previous Day (←)"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={handleNextDay}
-            className="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-95"
+            className="p-1.5 rounded-xl text-stone-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
             title="Next Day (→)"
           >
             <ChevronRight className="w-4 h-4" />

@@ -16,6 +16,8 @@ import FocusModeModal from './components/FocusModeModal';
 import BajrangMode from './components/BajrangMode';
 import DailyBlessing from './components/DailyBlessing';
 import { AlertTriangle, X, CheckCircle } from 'lucide-react';
+import hanumanEnvLight from './assets/hanuman_environment_light.jpg';
+import hanumanEnvDark from './assets/hanuman_environment_dark.jpg';
 
 import {
   subscribeToTasks,
@@ -107,6 +109,17 @@ export default function App() {
       localStorage.setItem('daily_flow_theme', 'light');
     }
   }, [darkMode]);
+
+  // Sync theme across multi-window or tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'daily_flow_theme') {
+        setDarkMode(e.newValue === 'dark');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Persist hanumanMode preference
   useEffect(() => {
@@ -298,12 +311,67 @@ export default function App() {
   const streakCount = calculateStreak(allTasks, currentDate);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 relative">
-      {/* Desktop Cursor Tracking Light Layer */}
-      <div
-        className="pointer-events-none fixed w-96 h-96 rounded-full bg-indigo-500/5 blur-3xl transition-transform duration-300 -translate-x-1/2 -translate-y-1/2 hidden md:block z-0"
-        style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
-      />
+    <div className="min-h-screen text-stone-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 relative">
+      {/* CINEMATIC ENVIRONMENTAL BACKGROUND SYSTEM */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Light Mode: Warm Golden Sunrise with Lord Hanuman, Himalayas, and Sacred Temples */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            darkMode ? 'opacity-0' : 'opacity-100'
+          }`}
+          style={{
+            transform: `translate3d(${
+              cursorPos.x > 0 ? (cursorPos.x - (typeof window !== 'undefined' ? window.innerWidth : 1200) / 2) * 0.006 : 0
+            }px, ${
+              cursorPos.y > 0 ? (cursorPos.y - (typeof window !== 'undefined' ? window.innerHeight : 800) / 2) * 0.006 : 0
+            }px, 0)`
+          }}
+        >
+          <img
+            src={hanumanEnvLight}
+            alt="Lord Hanuman Golden Sunrise Environment"
+            className="w-full h-full object-cover object-right lg:object-[center_right] scale-105"
+          />
+          {/* Contrast-enhancing gradients for high readability of productivity panels */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#faf6f0]/95 via-[#faf6f0]/80 to-[#faf6f0]/25 lg:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#faf6f0]/85 via-transparent to-[#faf6f0]/40" />
+        </div>
+
+        {/* Dark Mode: Celestial Moonlit Midnight with Lord Hanuman, Stars, and Glowing Temples */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+            darkMode ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            transform: `translate3d(${
+              cursorPos.x > 0 ? (cursorPos.x - (typeof window !== 'undefined' ? window.innerWidth : 1200) / 2) * 0.006 : 0
+            }px, ${
+              cursorPos.y > 0 ? (cursorPos.y - (typeof window !== 'undefined' ? window.innerHeight : 800) / 2) * 0.006 : 0
+            }px, 0)`
+          }}
+        >
+          <img
+            src={hanumanEnvDark}
+            alt="Lord Hanuman Celestial Midnight Environment"
+            className="w-full h-full object-cover object-right lg:object-[center_right] scale-105"
+          />
+          {/* Contrast-enhancing gradients for deep midnight immersion and high readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#070b14]/96 via-[#070b14]/85 to-[#070b14]/25 lg:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#070b14]/90 via-transparent to-[#070b14]/50" />
+        </div>
+
+        {/* Dynamic Divine Radial Aura following cursor on desktop */}
+        <div
+          className="absolute w-[500px] h-[500px] rounded-full pointer-events-none blur-3xl transition-transform duration-500 -translate-x-1/2 -translate-y-1/2 hidden md:block opacity-60"
+          style={{
+            left: `${cursorPos.x}px`,
+            top: `${cursorPos.y}px`,
+            background: darkMode
+              ? 'radial-gradient(circle, rgba(245, 158, 11, 0.09) 0%, rgba(99, 102, 241, 0.04) 50%, transparent 75%)'
+              : 'radial-gradient(circle, rgba(245, 158, 11, 0.14) 0%, rgba(251, 191, 36, 0.06) 50%, transparent 75%)'
+          }}
+        />
+      </div>
 
       {/* Top Header */}
       <Header

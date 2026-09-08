@@ -87,13 +87,13 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
   const getCellClasses = (count) => {
     switch (count) {
       case 1:
-        return 'bg-emerald-300 border-emerald-400 dark:bg-[#0e4429] dark:border-[#0e4429] text-emerald-900 dark:text-emerald-300';
+        return 'bg-amber-200 border-amber-300 dark:bg-[#0e4429] dark:border-[#0e4429] text-amber-900 dark:text-emerald-300';
       case 2:
-        return 'bg-emerald-500 border-emerald-600 dark:bg-[#006d32] dark:border-[#006d32] text-white dark:text-emerald-200';
+        return 'bg-emerald-400 border-emerald-500 dark:bg-[#006d32] dark:border-[#006d32] text-white dark:text-emerald-200';
       case 3:
-        return 'bg-emerald-600 border-emerald-700 dark:bg-[#39d353] dark:border-[#39d353] text-white dark:text-slate-950 shadow-sm shadow-emerald-500/30';
+        return 'bg-emerald-600 border-emerald-700 dark:bg-[#39d353] dark:border-[#39d353] text-white dark:text-slate-950 shadow-xs shadow-emerald-500/30';
       default:
-        return 'bg-slate-200/80 border-slate-300/60 dark:bg-[#161b22] dark:border-[#30363d]/60 text-slate-400 dark:text-slate-600';
+        return 'bg-amber-100/40 border-amber-200/50 dark:bg-[#161b22] dark:border-[#30363d]/60 text-stone-400 dark:text-slate-600';
     }
   };
 
@@ -117,47 +117,47 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="bg-white/80 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-7 shadow-xl text-slate-900 dark:text-slate-100 relative overflow-hidden transition-all duration-300"
+      className="glass-panel rounded-3xl p-5 sm:p-7 shadow-xl relative overflow-hidden transition-all duration-300"
     >
       {/* Background Ambient Glow */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/5 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-72 h-72 bg-amber-500/5 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header & Elevated Metric Cards */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-6 pb-5 border-b border-slate-200/80 dark:border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-6 pb-5 border-b border-[var(--border-color)]">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-emerald-500 text-white shadow-md shadow-indigo-500/20">
-            <Trophy className="w-5 h-5" />
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/20 ring-2 ring-amber-300/40">
+            <Trophy className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold font-mono tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
-                ANALYTICS ENGINE
+              <span className="text-[10px] font-black font-mono tracking-widest text-amber-700 dark:text-amber-400 uppercase">
+                CONSISTENCY ENGINE
               </span>
             </div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white font-serif sm:font-sans">
+            <h3 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white font-sans tracking-tight">
               ACTIVITY & CONSISTENCY
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-              Your consistency at a glance — <span className="text-emerald-600 dark:text-emerald-400 font-bold">{totalTop3CompletedYear}</span> Top 3 tasks completed in the past year
+            <p className="text-xs text-stone-600 dark:text-slate-400 font-medium mt-0.5">
+              Your consistency at a glance — <span className="text-amber-700 dark:text-amber-400 font-bold">{totalTop3CompletedYear}</span> Top 3 tasks completed in the past year
             </p>
           </div>
         </div>
 
         {/* 3 Mini Metric Glass Cards */}
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-          <div className="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-center transition-all hover:-translate-y-0.5 shadow-2xs">
-            <span className="text-slate-500 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Active Days</span>
-            <span className="font-mono font-extrabold text-slate-900 dark:text-emerald-400 text-sm sm:text-base">{activeDaysCount}</span>
+          <div className="p-3 rounded-2xl bg-amber-100/60 dark:bg-slate-800/80 border border-amber-300/40 dark:border-slate-700/80 text-center transition-all hover:-translate-y-0.5 shadow-2xs">
+            <span className="text-stone-500 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Active Days</span>
+            <span className="font-mono font-black text-stone-900 dark:text-emerald-400 text-sm sm:text-base">{activeDaysCount}</span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-center transition-all hover:-translate-y-0.5 shadow-2xs">
-            <span className="text-slate-500 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Max Streak</span>
-            <span className="font-mono font-extrabold text-amber-600 dark:text-amber-400 text-sm sm:text-base">{maxStreak}</span>
+          <div className="p-3 rounded-2xl bg-amber-100/60 dark:bg-slate-800/80 border border-amber-300/40 dark:border-slate-700/80 text-center transition-all hover:-translate-y-0.5 shadow-2xs">
+            <span className="text-stone-500 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Max Streak</span>
+            <span className="font-mono font-black text-amber-700 dark:text-amber-400 text-sm sm:text-base">{maxStreak}</span>
           </div>
 
-          <div className="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-center transition-all hover:-translate-y-0.5 shadow-2xs flex flex-col items-center justify-center">
-            <span className="text-slate-500 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Current</span>
-            <span className="font-mono font-extrabold text-emerald-600 dark:text-emerald-400 text-sm sm:text-base flex items-center gap-1">
+          <div className="p-3 rounded-2xl bg-amber-100/60 dark:bg-slate-800/80 border border-amber-300/40 dark:border-slate-700/80 text-center transition-all hover:-translate-y-0.5 shadow-2xs flex flex-col items-center justify-center">
+            <span className="text-stone-500 dark:text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Current</span>
+            <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base flex items-center gap-1">
               {currentStreak} <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-400/30 animate-pulse" />
             </span>
           </div>

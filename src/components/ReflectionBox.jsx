@@ -33,17 +33,17 @@ export default function ReflectionBox({ currentDate }) {
   };
 
   return (
-    <section className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-4 sm:p-6 transition-all">
-      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+    <section className="glass-panel rounded-3xl p-4 sm:p-6 transition-all duration-300">
+      <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-[var(--border-color)]">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
+          <div className="p-2 rounded-xl bg-amber-100/70 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300/50 dark:border-amber-800/60">
             <Trophy className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-serif sm:font-sans">
+            <h3 className="text-base font-black text-stone-900 dark:text-slate-100 flex items-center gap-2 font-sans tracking-tight">
               <span>Daily Reflection & Wins</span>
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-stone-600 dark:text-slate-400 font-medium">
               What was your major breakthrough, lesson, or highlight for today?
             </p>
           </div>
@@ -52,11 +52,11 @@ export default function ReflectionBox({ currentDate }) {
         {/* Live Save Status Indicator */}
         <div className="flex items-center gap-1.5 text-xs font-mono">
           {saveStatus === 'saving' ? (
-            <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+            <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
               <CheckCheck className="w-3.5 h-3.5" /> Saved
             </span>
           )}
@@ -69,9 +69,9 @@ export default function ReflectionBox({ currentDate }) {
           value={winText}
           onChange={handleChange}
           placeholder="Record your daily win, key progress metric, or reflection entry before closing out the day..."
-          className="w-full p-4 text-sm bg-slate-50/70 dark:bg-slate-800/40 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-2xl border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-sans leading-relaxed resize-y"
+          className="w-full p-4 text-sm bg-amber-50/40 dark:bg-slate-800/40 text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-400 rounded-2xl border border-amber-300/40 dark:border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-sans leading-relaxed resize-y"
         />
-        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+        <div className="mt-2 flex items-center justify-between text-[11px] text-stone-500 dark:text-slate-400 font-mono">
           <span className="flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-amber-500" /> Executive Journal Log
           </span>

@@ -92,15 +92,15 @@ export default function TaskCard({
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className={`group relative flex items-center gap-3.5 p-4 rounded-2xl border transition-all duration-300 ${
         task.completed
-          ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 shadow-none'
+          ? 'bg-amber-50/40 dark:bg-slate-900/40 border-stone-200/60 dark:border-slate-800/60 text-stone-400 dark:text-slate-500 shadow-none backdrop-blur-md'
           : isTop3
-          ? 'bg-white/90 dark:bg-slate-900/90 border-amber-500/30 dark:border-amber-500/30 hover:border-amber-500/60 shadow-md hover:shadow-2xl dark:hover:shadow-amber-500/5 ring-1 ring-amber-500/10'
-          : 'bg-white/90 dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-xl'
+          ? 'glass-card border-amber-400/40 dark:border-amber-500/35 hover:border-amber-500/80 shadow-md hover:shadow-xl dark:hover:shadow-amber-500/10 ring-1 ring-amber-400/20'
+          : 'glass-card border-stone-200/80 dark:border-slate-800/80 hover:border-amber-400/50 dark:hover:border-slate-700 shadow-xs hover:shadow-md'
       }`}
     >
       {/* Number Badge for Top 3 Tasks */}
       {isTop3 && (
-        <span className="shrink-0 font-mono font-black text-xs text-amber-500/60 dark:text-amber-400/60 w-5 text-center">
+        <span className="shrink-0 font-mono font-black text-xs text-amber-600/70 dark:text-amber-400/70 w-5 text-center">
           0{index + 1}
         </span>
       )}
@@ -109,7 +109,7 @@ export default function TaskCard({
       {dragHandleProps && (
         <div
           {...dragHandleProps}
-          className="cursor-grab active:cursor-grabbing p-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors shrink-0"
+          className="cursor-grab active:cursor-grabbing p-1 text-stone-300 dark:text-slate-600 hover:text-amber-600 dark:hover:text-slate-400 transition-colors shrink-0"
           title="Drag to reorder"
         >
           <GripVertical className="w-4 h-4" />
@@ -123,8 +123,8 @@ export default function TaskCard({
           task.completed
             ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/30'
             : isTop3
-            ? 'border-amber-400 dark:border-amber-500/50 hover:border-amber-500 bg-amber-50/30 dark:bg-amber-950/30'
-            : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-500 bg-slate-50 dark:bg-slate-800'
+            ? 'border-amber-400 dark:border-amber-500/60 hover:border-amber-500 bg-amber-100/60 dark:bg-amber-950/40 shadow-xs'
+            : 'border-stone-300 dark:border-slate-600 hover:border-amber-500 bg-amber-50/40 dark:bg-slate-800/60 shadow-xs'
         }`}
         aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
       >

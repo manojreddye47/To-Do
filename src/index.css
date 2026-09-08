@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+@variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @layer base {
   :root {
     color-scheme: light;
-    --bg-app: #f8fafc;
-    --bg-surface: #ffffff;
-    --bg-surface-elevated: #ffffff;
-    --bg-glass: rgba(255, 255, 255, 0.85);
-    --bg-card: #ffffff;
-    --bg-dock: rgba(15, 23, 42, 0.92);
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --border-color: rgba(226, 232, 240, 0.9);
-    --border-subtle: rgba(203, 213, 225, 0.6);
-    --shadow-main: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+    --bg-app: #faf6f0;
+    --bg-surface: rgba(255, 253, 248, 0.82);
+    --bg-surface-elevated: rgba(255, 255, 255, 0.94);
+    --bg-glass: rgba(255, 251, 242, 0.78);
+    --bg-card: rgba(255, 255, 255, 0.82);
+    --bg-dock: rgba(255, 251, 243, 0.92);
+    --text-primary: #1c1917;
+    --text-secondary: #57534e;
+    --text-muted: #78716c;
+    --border-color: rgba(245, 158, 11, 0.22);
+    --border-subtle: rgba(214, 180, 137, 0.3);
+    --shadow-main: 0 16px 40px -10px rgba(180, 83, 9, 0.08);
 
-    /* Heatmap Levels - Light Mode */
-    --hm-empty: #e2e8f0;
-    --hm-empty-border: #cbd5e1;
+    /* Heatmap Levels - Warm Sunrise Scale */
+    --hm-empty: rgba(226, 232, 240, 0.75);
+    --hm-empty-border: rgba(203, 213, 225, 0.8);
     --hm-l1: #86efac;
     --hm-l1-border: #4ade80;
     --hm-l2: #22c55e;
@@ -31,20 +31,20 @@
 
   html.dark, html[data-theme="dark"] {
     color-scheme: dark;
-    --bg-app: #090d16;
-    --bg-surface: #0f172a;
-    --bg-surface-elevated: #1e293b;
-    --bg-glass: rgba(15, 23, 42, 0.85);
-    --bg-card: rgba(15, 23, 42, 0.9);
-    --bg-dock: rgba(15, 23, 42, 0.95);
+    --bg-app: #070b14;
+    --bg-surface: rgba(13, 19, 33, 0.82);
+    --bg-surface-elevated: rgba(22, 30, 49, 0.92);
+    --bg-glass: rgba(10, 15, 28, 0.78);
+    --bg-card: rgba(13, 20, 36, 0.84);
+    --bg-dock: rgba(7, 12, 24, 0.94);
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
-    --border-color: rgba(30, 41, 59, 0.8);
-    --border-subtle: rgba(51, 65, 85, 0.6);
-    --shadow-main: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    --border-color: rgba(245, 158, 11, 0.2);
+    --border-subtle: rgba(99, 102, 241, 0.22);
+    --shadow-main: 0 24px 50px -15px rgba(0, 0, 0, 0.65);
 
-    /* Heatmap Levels - Dark Mode */
+    /* Heatmap Levels - Dark Celestial Mode */
     --hm-empty: #161b22;
     --hm-empty-border: #30363d;
     --hm-l1: #0e4429;
@@ -56,22 +56,44 @@
   }
 
   body {
-    @apply antialiased text-slate-900 dark:text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300 relative overflow-x-hidden;
+    @apply antialiased text-stone-900 dark:text-slate-100 min-h-screen font-sans selection:bg-amber-500 selection:text-white transition-colors duration-300 relative overflow-x-hidden;
     background-color: var(--bg-app);
   }
 }
 
 /* Glassmorphism Depth System Tokens */
 .glass-panel {
-  @apply bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-md shadow-slate-950/5 transition-all duration-300;
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-main);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card {
-  @apply bg-white dark:bg-slate-900/90 border border-slate-200/70 dark:border-slate-800/80 hover:border-indigo-300/80 dark:hover:border-indigo-500/40 shadow-xs hover:shadow-xl dark:hover:shadow-indigo-500/5 transition-all duration-300;
+  background-color: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 20px 35px -10px rgba(245, 158, 11, 0.1);
 }
 
 .glass-dock {
-  @apply bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-800 shadow-2xl shadow-slate-950/40 text-white;
+  background-color: var(--bg-dock);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.saffron-glow {
+  box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.35);
 }
 
 .ambient-glow {
