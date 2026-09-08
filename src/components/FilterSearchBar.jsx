@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, Filter, ArrowRightLeft, Clock } from 'lucide-react';
+import { Search, X, ArrowRightLeft } from 'lucide-react';
 
 export default function FilterSearchBar({
   activeFilter,
@@ -18,7 +18,7 @@ export default function FilterSearchBar({
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 space-y-3 shadow-xs">
+    <div className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 sm:p-4 space-y-3 shadow-xs transition-colors duration-300">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Filter Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
@@ -26,9 +26,9 @@ export default function FilterSearchBar({
             <button
               key={opt.id}
               onClick={() => setActiveFilter(opt.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 activeFilter === opt.id
-                  ? 'bg-slate-900 text-white dark:bg-indigo-600 dark:text-white shadow-xs'
+                  ? 'bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white shadow-sm shadow-indigo-600/20'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
@@ -41,12 +41,12 @@ export default function FilterSearchBar({
         {unfinishedPastCount > 0 && (
           <button
             onClick={onMigrateTasks}
-            className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-2xs"
+            className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-2xs"
             title="Migrate uncompleted tasks from past dates to Today"
           >
             <ArrowRightLeft className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span>Migrate Unfinished Tasks</span>
-            <span className="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100">
+            <span className="px-1.5 py-0.2 text-[10px] font-extrabold rounded-full bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100">
               {unfinishedPastCount}
             </span>
           </button>
@@ -61,7 +61,7 @@ export default function FilterSearchBar({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search tasks by keyword..."
-          className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-sans"
+          className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all font-sans"
         />
         {searchQuery && (
           <button

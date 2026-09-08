@@ -62,7 +62,7 @@ export default function FocusModeModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-in fade-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-slate-950/90 backdrop-blur-xl animate-in fade-in">
         {/* Subtle Ambient Glow */}
         <div className="absolute w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -71,17 +71,17 @@ export default function FocusModeModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-xl bg-slate-900/90 rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl text-center space-y-6 relative overflow-hidden"
+          className="w-full max-w-xl bg-white/95 dark:bg-slate-900/90 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-2xl text-center space-y-6 relative overflow-hidden transition-colors duration-300"
         >
           {/* Header Bar */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-indigo-400 font-mono text-xs uppercase tracking-widest font-semibold">
+            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-mono text-xs uppercase tracking-widest font-semibold">
               <Target className="w-4 h-4 animate-pulse" /> Focus Mode Architecture
             </div>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -89,12 +89,12 @@ export default function FocusModeModal({
 
           {/* Task Selector Dropdown if multiple pending tasks exist */}
           {pendingTasks.length > 0 ? (
-            <div className="space-y-2">
-              <label className="block text-xs text-slate-400 font-medium">Select Task to Execute</label>
+            <div className="space-y-2 text-left">
+              <label className="block text-xs text-slate-600 dark:text-slate-400 font-medium">Select Task to Execute</label>
               <select
                 value={selectedTaskId || ''}
                 onChange={(e) => setSelectedTaskId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-800/80 text-slate-100 border border-slate-700/80 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/40 font-sans"
               >
                 {pendingTasks.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -104,29 +104,29 @@ export default function FocusModeModal({
               </select>
             </div>
           ) : (
-            <div className="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-2xl text-emerald-300 text-sm font-semibold">
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
               ✨ All tasks completed for today!
             </div>
           )}
 
           {/* Primary Focus Card Display */}
           {currentTask && (
-            <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-800/80 to-slate-900 border border-slate-700/80 space-y-4 shadow-xl">
+            <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-50 via-indigo-50/40 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/80 space-y-4 shadow-xl">
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold font-mono ${
                 currentTask.category === 'top3'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                  ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30'
+                  : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-500/30'
               }`}>
                 {currentTask.category === 'top3' ? <Flame className="w-3.5 h-3.5" /> : null}
                 {currentTask.category === 'top3' ? 'Top 3 Priority' : 'Secondary Task'}
               </span>
 
-              <h2 className="text-xl sm:text-2xl font-bold text-white leading-relaxed font-sans">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-relaxed font-sans">
                 {currentTask.title}
               </h2>
 
               {/* Timer Display */}
-              <div className="text-5xl sm:text-6xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-indigo-300 py-2">
+              <div className="text-5xl sm:text-6xl font-black font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-slate-900 via-indigo-950 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-300 py-2">
                 {formatTimer(secondsLeft)}
               </div>
 
@@ -149,7 +149,7 @@ export default function FocusModeModal({
                     setIsActive(false);
                     setSecondsLeft(25 * 60);
                   }}
-                  className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors"
                   title="Reset Timer"
                 >
                   <RotateCcw className="w-4 h-4" />

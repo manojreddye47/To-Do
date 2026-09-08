@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { NotebookPen, Sun, Moon, Database, ShieldCheck, BarChart3, Target, Command } from 'lucide-react';
 import { isFirebaseConfigured } from '../firebase';
 import StreakCounter from './StreakCounter';
@@ -13,7 +14,7 @@ export default function Header({
   streakCount = 0
 }) {
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-xl bg-white/70 dark:bg-[#090d16]/70 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <header className="sticky top-0 z-30 backdrop-blur-2xl bg-white/80 dark:bg-[#090d16]/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
@@ -43,8 +44,8 @@ export default function Header({
           {/* Focus Mode Trigger */}
           <button
             onClick={onOpenFocusMode}
-            className="px-2.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
-            title="Enter Focus Mode"
+            className="px-2.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            title="Enter Focus Mode (F)"
           >
             <Target className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span className="hidden lg:inline">Focus</span>
@@ -53,7 +54,7 @@ export default function Header({
           {/* Command Palette Trigger */}
           <button
             onClick={onOpenCommandPalette}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 text-xs font-medium"
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 text-xs font-medium cursor-pointer"
             title="Command Palette (Ctrl + K)"
           >
             <Command className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
@@ -63,8 +64,8 @@ export default function Header({
           {/* Analytics Modal Trigger */}
           <button
             onClick={onOpenAnalyticsModal}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1.5 text-xs font-semibold"
-            title="View Historical Analytics & Insights"
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+            title="View Historical Analytics & Insights (I)"
           >
             <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span className="hidden md:inline">Insights</span>
@@ -73,7 +74,7 @@ export default function Header({
           {/* Firebase Status Badge */}
           <button
             onClick={onOpenFirebaseModal}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               isFirebaseConfigured
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
                 : 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/50 hover:bg-amber-100 dark:hover:bg-amber-900/50'
@@ -84,18 +85,23 @@ export default function Header({
             <span className="hidden xl:inline">Realtime DB</span>
           </button>
 
-          {/* Dark / Light Toggle */}
-          <button
+          {/* ELEGANT FLOATING THEME TOGGLE PILL (☀️ ◉ 🌙) */}
+          <div
             onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/60 dark:border-slate-700/60"
-            aria-label="Toggle Theme"
+            className="relative flex items-center justify-between w-16 h-8 p-1 rounded-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 cursor-pointer shadow-inner transition-colors duration-300"
+            title={`Switch to ${darkMode ? 'Light' : 'Dark'} mode`}
           >
-            {darkMode ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-slate-700" />
-            )}
-          </button>
+            <Sun className="w-3.5 h-3.5 text-amber-500 z-10 ml-0.5" />
+            <Moon className="w-3.5 h-3.5 text-indigo-400 z-10 mr-0.5" />
+
+            <motion.div
+              layout
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              className={`absolute top-1 bottom-1 w-6 rounded-full bg-white dark:bg-slate-900 shadow-md ${
+                darkMode ? 'right-1' : 'left-1'
+              }`}
+            />
+          </div>
         </div>
       </div>
     </header>

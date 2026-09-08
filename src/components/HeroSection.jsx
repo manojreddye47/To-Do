@@ -66,22 +66,22 @@ export default function HeroSection({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="relative p-6 sm:p-10 bg-slate-900/90 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-800 shadow-2xl shadow-slate-950/50 text-white overflow-hidden"
+      className="relative p-6 sm:p-10 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-slate-950/50 text-slate-900 dark:text-white overflow-hidden transition-colors duration-300"
     >
       {/* Background Ambient Glows */}
-      <div className="absolute -top-24 -left-24 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -left-24 w-72 h-72 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
         {/* Left Side: Typography & Daily Headline */}
         <div className="space-y-3 text-center md:text-left flex-1">
           <motion.div variants={itemVariants} className="flex items-center justify-center md:justify-start gap-2">
-            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
               EXECUTIVE PROTOCOL
             </span>
             {streakCount > 0 && (
-              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 font-mono">
-                <Flame className="w-3.5 h-3.5 fill-amber-400/20 animate-pulse text-amber-400" />
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 font-mono">
+                <Flame className="w-3.5 h-3.5 fill-amber-400/20 animate-pulse text-amber-500 dark:text-amber-400" />
                 {streakCount} Day Streak
               </span>
             )}
@@ -89,21 +89,21 @@ export default function HeroSection({
 
           <motion.h1
             variants={itemVariants}
-            className="text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-400 font-sans"
+            className="text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-400 font-sans"
           >
             TODAY
           </motion.h1>
 
           <motion.p
             variants={itemVariants}
-            className="text-xs sm:text-sm font-bold font-mono tracking-widest text-indigo-300/90"
+            className="text-xs sm:text-sm font-bold font-mono tracking-widest text-indigo-600 dark:text-indigo-300/90"
           >
             {formatDateHeader(currentDate)}
           </motion.p>
 
           <motion.p
             variants={itemVariants}
-            className="text-xs sm:text-sm text-slate-400 max-w-md leading-relaxed"
+            className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md leading-relaxed"
           >
             {percentage === 100
               ? '🎉 Outstanding execution! All planned items conquered.'
@@ -117,16 +117,16 @@ export default function HeroSection({
             variants={itemVariants}
             className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs font-mono"
           >
-            <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span className="text-white font-bold">{completedTasks}</span>
-              <span className="text-slate-400">Completed</span>
+            <div className="flex items-center gap-1.5 bg-slate-100/90 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-slate-900 dark:text-white font-bold">{completedTasks}</span>
+              <span className="text-slate-500 dark:text-slate-400">Completed</span>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80">
-              <CircleDashed className="w-4 h-4 text-indigo-400" />
-              <span className="text-white font-bold">{remainingTasks}</span>
-              <span className="text-slate-400">Remaining</span>
+            <div className="flex items-center gap-1.5 bg-slate-100/90 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
+              <CircleDashed className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="text-slate-900 dark:text-white font-bold">{remainingTasks}</span>
+              <span className="text-slate-500 dark:text-slate-400">Remaining</span>
             </div>
           </motion.div>
         </div>
@@ -146,7 +146,7 @@ export default function HeroSection({
                 cx="80"
                 cy="80"
                 r={radius}
-                className="text-slate-800/90"
+                className="text-slate-200 dark:text-slate-800/90"
                 strokeWidth={strokeWidth}
                 stroke="currentColor"
                 fill="transparent"
@@ -178,10 +178,10 @@ export default function HeroSection({
 
             {/* Inner Ring Text */}
             <div className="absolute flex flex-col items-center justify-center text-center">
-              <span className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-white drop-shadow-md">
+              <span className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900 dark:text-white drop-shadow-xs">
                 {displayPercentage}%
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-300/80 font-mono mt-0.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-300/80 font-mono mt-0.5">
                 COMPLETE
               </span>
             </div>
