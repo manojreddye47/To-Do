@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { NotebookPen, Sun, Moon, Database, ShieldCheck, BarChart3, Target, Command } from 'lucide-react';
+import { NotebookPen, Sun, Moon, Database, ShieldCheck, BarChart3, Target, Command, Zap } from 'lucide-react';
 import { isFirebaseConfigured } from '../firebase';
 import StreakCounter from './StreakCounter';
 
@@ -11,6 +11,9 @@ export default function Header({
   onOpenAnalyticsModal,
   onOpenFocusMode,
   onOpenCommandPalette,
+  onOpenBajrangMode,
+  hanumanMode,
+  setHanumanMode,
   streakCount = 0
 }) {
   return (
@@ -40,6 +43,18 @@ export default function Header({
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Streak Counter */}
           <StreakCounter streakCount={streakCount} />
+
+          {/* ⚡ Bajrang Mode Trigger (when Hanuman Focus is active) */}
+          {hanumanMode && (
+            <button
+              onClick={onOpenBajrangMode}
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer shrink-0"
+              title="Activate ⚡ Bajrang Mode (B)"
+            >
+              <Zap className="w-3.5 h-3.5 fill-slate-950" />
+              <span className="hidden sm:inline">Bajrang</span>
+            </button>
+          )}
 
           {/* Focus Mode Trigger */}
           <button
@@ -85,10 +100,24 @@ export default function Header({
             <span className="hidden xl:inline">Realtime DB</span>
           </button>
 
+          {/* 🔱 HANUMAN FOCUS EXPERIENCE TOGGLE */}
+          <button
+            onClick={() => setHanumanMode(!hanumanMode)}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+              hanumanMode
+                ? 'bg-amber-50 text-amber-900 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40 shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700'
+            }`}
+            title={hanumanMode ? "Hanuman Focus Experience: Enabled (Click to disable)" : "Enable Hanuman Focus Experience"}
+          >
+            <span className="text-xs">🔱</span>
+            <span className="hidden xl:inline">{hanumanMode ? "Hanuman ON" : "Hanuman OFF"}</span>
+          </button>
+
           {/* ELEGANT FLOATING THEME TOGGLE PILL (☀️ ◉ 🌙) */}
           <div
             onClick={() => setDarkMode(!darkMode)}
-            className="relative flex items-center justify-between w-16 h-8 p-1 rounded-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 cursor-pointer shadow-inner transition-colors duration-300"
+            className="relative flex items-center justify-between w-16 h-8 p-1 rounded-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 cursor-pointer shadow-inner transition-colors duration-300 shrink-0"
             title={`Switch to ${darkMode ? 'Light' : 'Dark'} mode`}
           >
             <Sun className="w-3.5 h-3.5 text-amber-500 z-10 ml-0.5" />

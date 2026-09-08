@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { motion, useSpring } from 'framer-motion';
-import { Award, Zap, Flame, CheckCircle2, CircleDashed, ArrowUpRight } from 'lucide-react';
+import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import { Award, Zap, Flame, CheckCircle2, CircleDashed, ArrowUpRight, Sparkles } from 'lucide-react';
+import hanumanArtwork from '../assets/hanuman_focus_artwork.jpg';
 
 export default function HeroSection({
   totalTasks = 0,
   completedTasks = 0,
   streakCount = 0,
-  currentDate
+  currentDate,
+  hanumanMode = false,
+  onOpenBajrangMode
 }) {
   const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   const remainingTasks = totalTasks - completedTasks;
@@ -14,6 +17,26 @@ export default function HeroSection({
   // Spring animation for smooth percentage count up
   const springValue = useSpring(0, { stiffness: 50, damping: 15 });
   const [displayPercentage, setDisplayPercentage] = useState(0);
+
+  // Parallax motion values for Hanuman artwork
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const artParallaxX = useSpring(useTransform(mouseX, [-200, 200], [-5, 5]), { stiffness: 180, damping: 22 });
+  const artParallaxY = useSpring(useTransform(mouseY, [-200, 200], [-5, 5]), { stiffness: 180, damping: 22 });
+
+  const handleMouseMove = (e) => {
+    if (!hanumanMode || window.matchMedia('(pointer: coarse)').matches) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   useEffect(() => {
     springValue.set(percentage);
@@ -66,18 +89,27 @@ export default function HeroSection({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className="relative p-6 sm:p-10 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-slate-950/50 text-slate-900 dark:text-white overflow-hidden transition-colors duration-300"
     >
       {/* Background Ambient Glows */}
       <div className="absolute -top-24 -left-24 w-72 h-72 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+      {hanumanMode && (
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-80 h-80 bg-amber-500/10 dark:bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+      )}
 
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
         {/* Left Side: Typography & Daily Headline */}
-        <div className="space-y-3 text-center md:text-left flex-1">
-          <motion.div variants={itemVariants} className="flex items-center justify-center md:justify-start gap-2">
-            <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
-              EXECUTIVE PROTOCOL
+        <div className="space-y-3 text-center lg:text-left flex-1">
+          <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-start gap-2">
+            <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest border transition-colors ${
+              hanumanMode
+                ? 'bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30'
+                : 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/30'
+            }`}>
+              {hanumanMode ? 'HANUMAN FOCUS PROTOCOL' : 'EXECUTIVE PROTOCOL'}
             </span>
             {streakCount > 0 && (
               <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 font-mono">
@@ -109,13 +141,15 @@ export default function HeroSection({
               ? '🎉 Outstanding execution! All planned items conquered.'
               : percentage >= 50
               ? 'Your day is moving fast. High momentum sustained.'
+              : hanumanMode
+              ? 'Strength begins with discipline. Tackle your Top 3 Non-Negotiables.'
               : 'Focus on your Top 3 Non-Negotiables to lock in today\'s win.'}
           </motion.p>
 
           {/* Quick Metrics Bar */}
           <motion.div
             variants={itemVariants}
-            className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs font-mono"
+            className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs font-mono"
           >
             <div className="flex items-center gap-1.5 bg-slate-100/90 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -128,10 +162,59 @@ export default function HeroSection({
               <span className="text-slate-900 dark:text-white font-bold">{remainingTasks}</span>
               <span className="text-slate-500 dark:text-slate-400">Remaining</span>
             </div>
+
+            {hanumanMode && onOpenBajrangMode && (
+              <button
+                onClick={onOpenBajrangMode}
+                className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold px-3.5 py-1.5 rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                <span>⚡ Enter Bajrang Mode</span>
+              </button>
+            )}
           </motion.div>
         </div>
 
-        {/* Right Side: DOMINANT CIRCULAR PROGRESS RING */}
+        {/* Right Side: DOMINANT CIRCULAR PROGRESS RING & OPTIONAL HANUMAN FOCUS GUARDIAN */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 shrink-0">
+          {/* Subtle Hanuman Artwork Presence with Parallax & Ambient Halo */}
+          {hanumanMode && (
+            <motion.div
+              variants={itemVariants}
+              style={{ x: artParallaxX, y: artParallaxY }}
+              className="relative flex flex-col items-center group cursor-pointer"
+              onClick={onOpenBajrangMode}
+              title="Activate ⚡ Bajrang Mode"
+            >
+              {/* Subtle Breathing Halo */}
+              <motion.div
+                animate={{ scale: [1, 1.1, 1], opacity: [0.25, 0.45, 0.25] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-0 w-28 h-28 sm:w-32 sm:h-32 -m-2 rounded-3xl bg-amber-500/20 dark:bg-amber-500/25 blur-xl pointer-events-none"
+              />
+
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-1 ring-amber-400/40 dark:ring-amber-400/30 shadow-lg bg-slate-900 border border-amber-300/40">
+                <img
+                  src={hanumanArtwork}
+                  alt="Lord Hanuman - Focus Guardian"
+                  className="w-full h-full object-cover object-center transform scale-105 group-hover:scale-115 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-amber-500/10 pointer-events-none" />
+              </div>
+
+              <div className="mt-2 text-center select-none">
+                <span className="text-[10px] font-extrabold font-mono tracking-widest text-amber-700 dark:text-amber-300 uppercase block">
+                  LORD HANUMAN
+                </span>
+                <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 block">
+                  Strength • Focus
+                </span>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Progress Ring */}
         <motion.div
           variants={itemVariants}
           className="relative flex flex-col items-center justify-center shrink-0"
@@ -187,6 +270,7 @@ export default function HeroSection({
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
     </motion.section>
   );

@@ -15,7 +15,8 @@ import {
   X,
   Command,
   CheckCircle2,
-  ListTodo
+  ListTodo,
+  Zap
 } from 'lucide-react';
 
 export default function CommandPaletteModal({
@@ -29,6 +30,9 @@ export default function CommandPaletteModal({
   onOpenAnalytics,
   onOpenFirebase,
   onToggleTheme,
+  onOpenBajrangMode,
+  hanumanMode,
+  setHanumanMode,
   darkMode,
   setActiveFilter
 }) {
@@ -36,6 +40,26 @@ export default function CommandPaletteModal({
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const commands = [
+    ...(hanumanMode && onOpenBajrangMode ? [{
+      id: 'bajrang-mode',
+      label: '⚡ Enter Bajrang Mode (High Focus)',
+      shortcut: 'B',
+      icon: Zap,
+      action: () => {
+        onOpenBajrangMode();
+        onClose();
+      }
+    }] : []),
+    ...(setHanumanMode ? [{
+      id: 'toggle-hanuman',
+      label: hanumanMode ? 'Disable Hanuman Focus Experience' : 'Enable Hanuman Focus Experience (🔱)',
+      shortcut: 'H',
+      icon: Flame,
+      action: () => {
+        setHanumanMode(!hanumanMode);
+        onClose();
+      }
+    }] : []),
     {
       id: 'add-task',
       label: 'Add New Task',

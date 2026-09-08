@@ -13,6 +13,8 @@ import FirebaseModal from './components/FirebaseModal';
 import AnalyticsModal from './components/AnalyticsModal';
 import CommandPaletteModal from './components/CommandPaletteModal';
 import FocusModeModal from './components/FocusModeModal';
+import BajrangMode from './components/BajrangMode';
+import DailyBlessing from './components/DailyBlessing';
 import { AlertTriangle, X, CheckCircle } from 'lucide-react';
 
 import {
@@ -47,6 +49,16 @@ export default function App() {
     }
   });
 
+  const [hanumanMode, setHanumanMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('daily_flow_hanuman_mode');
+      if (saved !== null) return saved === 'true';
+      return true; // Default ON for the Hanuman Focus Experience
+    } catch (e) {
+      return true;
+    }
+  });
+
   const [currentDate, setCurrentDate] = useState(getTodayISO);
   const [tasks, setTasks] = useState([]);
   const [allTasks, setAllTasks] = useState([]);
@@ -57,6 +69,7 @@ export default function App() {
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
+  const [isBajrangModeOpen, setIsBajrangModeOpen] = useState(false);
 
   const [fbError, setFbError] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
@@ -95,6 +108,11 @@ export default function App() {
     }
   }, [darkMode]);
 
+  // Persist hanumanMode preference
+  useEffect(() => {
+    localStorage.setItem('daily_flow_hanuman_mode', String(hanumanMode));
+  }, [hanumanMode]);
+
   // Listen to custom firebase errors
   useEffect(() => {
     const handleFbErr = (e) => {
@@ -125,9 +143,15 @@ export default function App() {
         setIsAnalyticsModalOpen(false);
         setIsFirebaseModalOpen(false);
         setIsFocusModeOpen(false);
+        setIsBajrangModeOpen(false);
       } else if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
         quickAddInputRef.current?.focus();
+      } else if (e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        if (hanumanMode) {
+          setIsBajrangModeOpen(true);
+        }
       } else if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
         setIsFocusModeOpen(true);
@@ -289,6 +313,9 @@ export default function App() {
         onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
         onOpenFocusMode={() => setIsFocusModeOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onOpenBajrangMode={() => setIsBajrangModeOpen(true)}
+        hanumanMode={hanumanMode}
+        setHanumanMode={setHanumanMode}
         streakCount={streakCount}
       />
 
@@ -333,6 +360,11 @@ export default function App() {
           </div>
         )}
 
+        {/* Optional Spiritual Focus Daily Blessing */}
+        {hanumanMode && (
+          <DailyBlessing currentDate={currentDate} />
+        )}
+
         {/* Date Navigator */}
         <DateNavigator currentDate={currentDate} setCurrentDate={setCurrentDate} />
 
@@ -342,6 +374,8 @@ export default function App() {
           completedTasks={completedCount}
           streakCount={streakCount}
           currentDate={currentDate}
+          hanumanMode={hanumanMode}
+          onOpenBajrangMode={() => setIsBajrangModeOpen(true)}
         />
 
         {/* Quick Executive Stats */}
@@ -422,6 +456,9 @@ export default function App() {
         onOpenFocusMode={() => setIsFocusModeOpen(true)}
         onOpenAnalytics={() => setIsAnalyticsModalOpen(true)}
         onOpenFirebase={() => setIsFirebaseModalOpen(true)}
+        onOpenBajrangMode={() => setIsBajrangModeOpen(true)}
+        hanumanMode={hanumanMode}
+        setHanumanMode={setHanumanMode}
         onToggleTheme={() => setDarkMode(!darkMode)}
         darkMode={darkMode}
         setActiveFilter={setActiveFilter}
@@ -430,6 +467,16 @@ export default function App() {
       <FocusModeModal
         isOpen={isFocusModeOpen}
         onClose={() => setIsFocusModeOpen(false)}
+        tasks={tasks}
+        onToggleComplete={handleToggleComplete}
+        currentDate={currentDate}
+        hanumanMode={hanumanMode}
+      />
+
+      {/* ⚡ Signature Bajrang Mode */}
+      <BajrangMode
+        isOpen={isBajrangModeOpen}
+        onClose={() => setIsBajrangModeOpen(false)}
         tasks={tasks}
         onToggleComplete={handleToggleComplete}
         currentDate={currentDate}
