@@ -81,11 +81,16 @@ export default function App() {
 
   // Sync theme to root html element
   useEffect(() => {
+    const root = document.documentElement;
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
+      root.style.colorScheme = 'dark';
       localStorage.setItem('daily_flow_theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+      root.style.colorScheme = 'light';
       localStorage.setItem('daily_flow_theme', 'light');
     }
   }, [darkMode]);

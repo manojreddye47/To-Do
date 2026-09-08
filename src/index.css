@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @layer base {
   :root {
+    color-scheme: light;
     --bg-app: #f8fafc;
     --bg-surface: #ffffff;
     --bg-surface-elevated: #ffffff;
@@ -26,7 +29,8 @@
     --hm-l3-border: #166534;
   }
 
-  html.dark {
+  html.dark, html[data-theme="dark"] {
+    color-scheme: dark;
     --bg-app: #090d16;
     --bg-surface: #0f172a;
     --bg-surface-elevated: #1e293b;
