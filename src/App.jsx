@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import DateNavigator from './components/DateNavigator';
-import ProgressBar from './components/ProgressBar';
+import HeroSection from './components/HeroSection';
 import StatsOverview from './components/StatsOverview';
 import FilterSearchBar from './components/FilterSearchBar';
 import TaskSection from './components/TaskSection';
@@ -65,7 +65,19 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Ambient Cursor Tracking Position (Desktop Only)
+  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
+
   const quickAddInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (window.matchMedia('(pointer: coarse)').matches) return;
+      setCursorPos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Sync theme to root html element
   useEffect(() => {
@@ -89,20 +101,19 @@ export default function App() {
     return () => window.removeEventListener('daily_flow_firebase_error', handleFbErr);
   }, []);
 
-  // Global Keyboard Shortcuts (Phase 15)
+  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
       const targetTag = e.target.tagName.toLowerCase();
       const isInput = targetTag === 'input' || targetTag === 'textarea' || e.target.isContentEditable;
 
-      // Cmd+K / Ctrl+K
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
         return;
       }
 
-      if (isInput) return; // Do not trigger shortcuts when typing inside inputs
+      if (isInput) return;
 
       if (e.key === 'Escape') {
         setIsCommandPaletteOpen(false);
@@ -259,9 +270,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 relative">
-      {/* Ambient Radial Background Mesh (Phase 1) */}
-      <div className="ambient-glow w-[500px] h-[500px] bg-indigo-500 top-0 left-1/4" />
-      <div className="ambient-glow w-[400px] h-[400px] bg-emerald-500 top-1/3 right-10" />
+      {/* Desktop Cursor Tracking Light Layer */}
+      <div
+        className="pointer-events-none fixed w-96 h-96 rounded-full bg-indigo-500/5 blur-3xl transition-transform duration-300 -translate-x-1/2 -translate-y-1/2 hidden md:block z-0"
+        style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
+      />
 
       {/* Top Header */}
       <Header
@@ -275,7 +288,7 @@ export default function App() {
       />
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 pb-28 relative z-10">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8 pb-32 relative z-10">
         {/* Toast Alert */}
         {toastMessage && (
           <motion.div
@@ -318,11 +331,12 @@ export default function App() {
         {/* Date Navigator */}
         <DateNavigator currentDate={currentDate} setCurrentDate={setCurrentDate} />
 
-        {/* Visual Completion Progress Bar Hero */}
-        <ProgressBar
+        {/* CINEMATIC TODAY PROGRESS HERO CENTERPIECE */}
+        <HeroSection
           totalTasks={tasks.length}
           completedTasks={completedCount}
           streakCount={streakCount}
+          currentDate={currentDate}
         />
 
         {/* Quick Executive Stats */}
@@ -342,14 +356,14 @@ export default function App() {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentDate}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
           >
             {loading ? (
-              <div className="py-12 text-center space-y-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-slate-800">
-                <div className="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+              <div className="py-16 text-center space-y-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg">
+                <div className="inline-block w-7 h-7 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Syncing with Realtime Database...</p>
               </div>
             ) : (
