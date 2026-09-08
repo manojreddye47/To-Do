@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Check, Trash2, Edit3, GripVertical, ArrowUpRight, ArrowDownRight, Flame } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, Trash2, Edit3, GripVertical, ArrowUpRight, ArrowDownRight, Flame, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 export default function TaskCard({
   task,
@@ -44,42 +46,66 @@ export default function TaskCard({
     }
   };
 
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    if (!task.completed) {
+      // Small celebratory particle burst for top3 tasks
+      if (task.category === 'top3') {
+        confetti({
+          particleCount: 25,
+          spread: 40,
+          origin: { y: 0.7 }
+        });
+      }
+    }
+    onToggleComplete(task.id, task.completed);
+  };
+
   const isTop3 = task.category === 'top3';
 
   return (
-    <div
-      className={`group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-xl border transition-all duration-200 shadow-xs ${
+    <motion.div
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+      className={`group relative flex items-center gap-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-300 ${
         task.completed
-          ? 'bg-slate-50/80 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500'
+          ? 'bg-slate-50/70 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 shadow-none'
           : isTop3
-          ? 'bg-white dark:bg-slate-900 border-indigo-200/80 dark:border-indigo-900/60 hover:border-indigo-300 dark:hover:border-indigo-800 shadow-indigo-500/5'
-          : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+          ? 'bg-white dark:bg-slate-900/90 border-indigo-200/80 dark:border-indigo-900/60 hover:border-indigo-400 dark:hover:border-indigo-500/50 shadow-sm hover:shadow-xl dark:hover:shadow-indigo-500/5'
+          : 'bg-white dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-lg'
       }`}
     >
       {/* Drag Handle */}
       {dragHandleProps && (
         <div
           {...dragHandleProps}
-          className="cursor-grab active:cursor-grabbing p-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
+          className="cursor-grab active:cursor-grabbing p-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors shrink-0"
           title="Drag to reorder"
         >
           <GripVertical className="w-4 h-4" />
         </div>
       )}
 
-      {/* Completion Checkbox */}
+      {/* Completion Checkbox with Smooth Animation */}
       <button
-        onClick={() => onToggleComplete(task.id, task.completed)}
-        className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0 border ${
+        onClick={handleToggle}
+        className={`w-6 h-6 rounded-xl flex items-center justify-center transition-all duration-300 shrink-0 border relative ${
           task.completed
-            ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+            ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-500/30'
             : isTop3
             ? 'border-indigo-300 dark:border-indigo-700 hover:border-indigo-500 dark:hover:border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/30'
             : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 bg-slate-50 dark:bg-slate-800'
         }`}
         aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
       >
-        {task.completed && <Check className="w-4 h-4 stroke-[3]" />}
+        <motion.div
+          initial={false}
+          animate={{ scale: task.completed ? 1 : 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+        >
+          <Check className="w-3.5 h-3.5 stroke-[3]" />
+        </motion.div>
       </button>
 
       {/* Title / Inline Edit */}
@@ -92,13 +118,13 @@ export default function TaskCard({
             onChange={(e) => setEditedTitle(e.target.value)}
             onBlur={handleSaveTitle}
             onKeyDown={handleKeyDown}
-            className="w-full px-2.5 py-1 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-indigo-400 dark:border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="w-full px-2.5 py-1 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-sans"
           />
         ) : (
           <div className="flex items-center gap-2">
             <span
               onDoubleClick={() => setIsEditing(true)}
-              className={`text-sm font-medium leading-relaxed truncate cursor-pointer select-none transition-all ${
+              className={`text-sm font-medium leading-relaxed truncate cursor-pointer select-none transition-all duration-300 ${
                 task.completed
                   ? 'line-through text-slate-400 dark:text-slate-500 font-normal'
                   : 'text-slate-800 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400'
@@ -109,8 +135,8 @@ export default function TaskCard({
             </span>
 
             {isTop3 && !task.completed && (
-              <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
-                <Flame className="w-2.5 h-2.5 mr-0.5" /> Priority
+              <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60">
+                <Flame className="w-3 h-3 mr-0.5 fill-amber-400/30" /> Priority
               </span>
             )}
           </div>
@@ -162,6 +188,6 @@ export default function TaskCard({
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

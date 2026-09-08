@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import DateNavigator from './components/DateNavigator';
 import ProgressBar from './components/ProgressBar';
@@ -10,6 +11,8 @@ import QuickAddBar from './components/QuickAddBar';
 import ReflectionBox from './components/ReflectionBox';
 import FirebaseModal from './components/FirebaseModal';
 import AnalyticsModal from './components/AnalyticsModal';
+import CommandPaletteModal from './components/CommandPaletteModal';
+import FocusModeModal from './components/FocusModeModal';
 import { AlertTriangle, X, CheckCircle } from 'lucide-react';
 
 import {
@@ -48,8 +51,13 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [allTasks, setAllTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal States
   const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
+
   const [fbError, setFbError] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -81,7 +89,69 @@ export default function App() {
     return () => window.removeEventListener('daily_flow_firebase_error', handleFbErr);
   }, []);
 
-  // Fetch all tasks for analytics & past rollover count
+  // Global Keyboard Shortcuts (Phase 15)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const targetTag = e.target.tagName.toLowerCase();
+      const isInput = targetTag === 'input' || targetTag === 'textarea' || e.target.isContentEditable;
+
+      // Cmd+K / Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+        return;
+      }
+
+      if (isInput) return; // Do not trigger shortcuts when typing inside inputs
+
+      if (e.key === 'Escape') {
+        setIsCommandPaletteOpen(false);
+        setIsAnalyticsModalOpen(false);
+        setIsFirebaseModalOpen(false);
+        setIsFocusModeOpen(false);
+      } else if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        quickAddInputRef.current?.focus();
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        setIsFocusModeOpen(true);
+      } else if (e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        setCurrentDate(getTodayISO());
+      } else if (e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        setIsAnalyticsModalOpen(true);
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevDay();
+      } else if (e.key === 'ArrowRight') {
+        handleNextDay();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentDate]);
+
+  const handlePrevDay = () => {
+    const [y, m, d] = currentDate.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    dateObj.setDate(dateObj.getDate() - 1);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    setCurrentDate(`${year}-${month}-${day}`);
+  };
+
+  const handleNextDay = () => {
+    const [y, m, d] = currentDate.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    dateObj.setDate(dateObj.getDate() + 1);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    setCurrentDate(`${year}-${month}-${day}`);
+  };
+
   const refreshAllTasks = () => {
     fetchAllTasks().then((data) => setAllTasks(data));
   };
@@ -188,33 +258,43 @@ export default function App() {
   const streakCount = calculateStreak(allTasks, currentDate);
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 relative">
+      {/* Ambient Radial Background Mesh (Phase 1) */}
+      <div className="ambient-glow w-[500px] h-[500px] bg-indigo-500 top-0 left-1/4" />
+      <div className="ambient-glow w-[400px] h-[400px] bg-emerald-500 top-1/3 right-10" />
+
       {/* Top Header */}
       <Header
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         onOpenFirebaseModal={() => setIsFirebaseModalOpen(true)}
         onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
+        onOpenFocusMode={() => setIsFocusModeOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         streakCount={streakCount}
       />
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 pb-28">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 pb-28 relative z-10">
         {/* Toast Alert */}
         {toastMessage && (
-          <div className="p-3 bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center justify-between shadow-md animate-in fade-in">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3.5 bg-emerald-500 text-white rounded-2xl text-xs font-semibold flex items-center justify-between shadow-lg shadow-emerald-500/20"
+          >
             <span className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" /> {toastMessage}
             </span>
             <button onClick={() => setToastMessage(null)}>
               <X className="w-4 h-4" />
             </button>
-          </div>
+          </motion.div>
         )}
 
         {/* Realtime DB Warning Banner */}
         {fbError && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 rounded-xl border border-rose-200 dark:border-rose-800 text-xs flex items-start justify-between gap-3 shadow-xs">
+          <div className="p-4 bg-rose-50 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 rounded-2xl border border-rose-200 dark:border-rose-800 text-xs flex items-start justify-between gap-3 shadow-xs">
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <div>
@@ -238,8 +318,12 @@ export default function App() {
         {/* Date Navigator */}
         <DateNavigator currentDate={currentDate} setCurrentDate={setCurrentDate} />
 
-        {/* Visual Completion Progress Bar */}
-        <ProgressBar totalTasks={tasks.length} completedTasks={completedCount} />
+        {/* Visual Completion Progress Bar Hero */}
+        <ProgressBar
+          totalTasks={tasks.length}
+          completedTasks={completedCount}
+          streakCount={streakCount}
+        />
 
         {/* Quick Executive Stats */}
         <StatsOverview tasks={tasks} />
@@ -254,23 +338,33 @@ export default function App() {
           onMigrateTasks={handleMigrateTasks}
         />
 
-        {/* Task Lists (Top 3 & Secondary) */}
-        {loading ? (
-          <div className="py-12 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <div className="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Syncing with Realtime Database...</p>
-          </div>
-        ) : (
-          <TaskSection
-            tasks={filteredTasks}
-            onToggleComplete={handleToggleComplete}
-            onUpdateTitle={handleUpdateTitle}
-            onUpdateCategory={handleUpdateCategory}
-            onDelete={handleDeleteTask}
-            onReorder={handleReorderTasks}
-            onQuickAddFocus={() => quickAddInputRef.current?.focus()}
-          />
-        )}
+        {/* Day Content Transition Wrapper */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentDate}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            {loading ? (
+              <div className="py-12 text-center space-y-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-slate-800">
+                <div className="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Syncing with Realtime Database...</p>
+              </div>
+            ) : (
+              <TaskSection
+                tasks={filteredTasks}
+                onToggleComplete={handleToggleComplete}
+                onUpdateTitle={handleUpdateTitle}
+                onUpdateCategory={handleUpdateCategory}
+                onDelete={handleDeleteTask}
+                onReorder={handleReorderTasks}
+                onQuickAddFocus={() => quickAddInputRef.current?.focus()}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
 
         {/* GitHub / LeetCode Style Top 3 Activity Heat Map */}
         <Top3ContributionGraph allTasks={allTasks} currentDate={currentDate} />
@@ -279,7 +373,7 @@ export default function App() {
         <ReflectionBox currentDate={currentDate} />
       </main>
 
-      {/* Sticky Quick Add Input Bar */}
+      {/* Floating Command Dock */}
       <QuickAddBar
         ref={quickAddInputRef}
         onAddTask={handleAddTask}
@@ -287,16 +381,38 @@ export default function App() {
         currentDate={currentDate}
       />
 
-      {/* Firebase Credentials Modal */}
+      {/* Modals & Command Palette */}
       <FirebaseModal
         isOpen={isFirebaseModalOpen}
         onClose={() => setIsFirebaseModalOpen(false)}
       />
 
-      {/* Analytics & Historical Dashboard Modal */}
       <AnalyticsModal
         isOpen={isAnalyticsModalOpen}
         onClose={() => setIsAnalyticsModalOpen(false)}
+        currentDate={currentDate}
+      />
+
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onAddTaskFocus={() => quickAddInputRef.current?.focus()}
+        onGoToday={() => setCurrentDate(getTodayISO())}
+        onPrevDay={handlePrevDay}
+        onNextDay={handleNextDay}
+        onOpenFocusMode={() => setIsFocusModeOpen(true)}
+        onOpenAnalytics={() => setIsAnalyticsModalOpen(true)}
+        onOpenFirebase={() => setIsFirebaseModalOpen(true)}
+        onToggleTheme={() => setDarkMode(!darkMode)}
+        darkMode={darkMode}
+        setActiveFilter={setActiveFilter}
+      />
+
+      <FocusModeModal
+        isOpen={isFocusModeOpen}
+        onClose={() => setIsFocusModeOpen(false)}
+        tasks={tasks}
+        onToggleComplete={handleToggleComplete}
         currentDate={currentDate}
       />
     </div>

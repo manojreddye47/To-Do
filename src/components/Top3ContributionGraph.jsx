@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Flame, Trophy, Calendar, Info, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Trophy, Flame, Sparkles } from 'lucide-react';
 
 export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
   const [hoveredCell, setHoveredCell] = useState(null);
 
-  // Helper to format ISO date YYYY-MM-DD
   const formatISO = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -12,7 +12,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     return `${year}-${month}-${day}`;
   };
 
-  // Build map of Top 3 completion counts per date for past 365 days
   const today = new Date(currentDate || new Date());
   const dateMap = {};
 
@@ -22,13 +21,11 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     }
   });
 
-  // Generate 52 weeks (364/365 days) matrix starting 52 weeks ago
   const endDate = new Date(today);
   const startDate = new Date(today);
   startDate.setDate(startDate.getDate() - (52 * 7 - 1));
 
-  // Align start date to Sunday or Monday
-  const dayOfWeek = startDate.getDay(); // 0 = Sun
+  const dayOfWeek = startDate.getDay();
   startDate.setDate(startDate.getDate() - dayOfWeek);
 
   const weeks = [];
@@ -40,7 +37,7 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     const daysInWeek = [];
     for (let d = 0; d < 7; d++) {
       const dateStr = formatISO(curr);
-      const count = Math.min(dateMap[dateStr] || 0, 3); // Max 3 per day
+      const count = Math.min(dateMap[dateStr] || 0, 3);
       if (count > 0) {
         totalTop3CompletedYear += count;
         activeDaysCount += 1;
@@ -57,7 +54,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     weeks.push(daysInWeek);
   }
 
-  // Calculate Max Streak & Current Streak for All 3 Top 3 completed
   let maxStreak = 0;
   let tempStreak = 0;
   let currentStreak = 0;
@@ -75,7 +71,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     checkDate.setDate(checkDate.getDate() + 1);
   }
 
-  // Calculate current active streak backwards from today
   let currStreakCheck = new Date(today);
   while (true) {
     const dateStr = formatISO(currStreakCheck);
@@ -88,7 +83,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     }
   }
 
-  // Color intensity scale
   const getColorClass = (count) => {
     switch (count) {
       case 1:
@@ -102,7 +96,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
     }
   };
 
-  // Month labels
   const monthLabels = [];
   let lastMonth = -1;
   weeks.forEach((week, wIdx) => {
@@ -118,29 +111,28 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
   });
 
   return (
-    <section className="bg-slate-900/95 dark:bg-slate-900/95 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-xl text-slate-100 relative overflow-hidden transition-colors">
-      {/* Background Accent Glow */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Header & Metrics Summary Bar */}
+    <motion.section
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
+      className="bg-slate-900/95 dark:bg-slate-900/95 rounded-3xl border border-slate-800 p-5 sm:p-6 shadow-2xl text-slate-100 relative overflow-hidden transition-colors"
+    >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5 pb-4 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Trophy className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white font-serif sm:font-sans flex items-center gap-2">
-                <span>Top 3 Activity Heat Map</span>
-              </h3>
-              <p className="text-xs text-slate-400 font-mono">
-                <span className="text-emerald-400 font-bold">{totalTop3CompletedYear}</span> Top 3 tasks completed in the past year
-              </p>
-            </div>
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Trophy className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white font-serif sm:font-sans">
+              Top 3 Activity Heat Map
+            </h3>
+            <p className="text-xs text-slate-400 font-mono">
+              <span className="text-emerald-400 font-bold">{totalTop3CompletedYear}</span> Top 3 tasks completed in the past year
+            </p>
           </div>
         </div>
 
-        {/* Metrics Grid */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
             <span className="text-slate-400 block text-[10px] uppercase font-semibold">Active Days</span>
@@ -162,10 +154,8 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
         </div>
       </div>
 
-      {/* Heat Map Grid */}
       <div className="overflow-x-auto pb-2 scrollbar-thin">
         <div className="min-w-[720px] space-y-1">
-          {/* Month Header Row */}
           <div className="flex items-center text-[10px] font-mono text-slate-400 pl-8 mb-1 relative h-4">
             {monthLabels.map((m, idx) => (
               <span
@@ -178,16 +168,13 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
             ))}
           </div>
 
-          {/* Grid Container (Day Rows x Week Cols) */}
           <div className="flex gap-1 items-start">
-            {/* Day Labels */}
             <div className="flex flex-col gap-1 text-[9px] font-mono text-slate-500 pr-1 select-none">
               <span className="h-2.5 leading-2.5">Mon</span>
               <span className="h-2.5 leading-2.5 mt-2.5">Wed</span>
               <span className="h-2.5 leading-2.5 mt-2.5">Fri</span>
             </div>
 
-            {/* Weeks Matrix */}
             <div className="flex gap-1">
               {weeks.map((week, wIdx) => (
                 <div key={wIdx} className="flex flex-col gap-1">
@@ -208,9 +195,7 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
         </div>
       </div>
 
-      {/* Interactive Tooltip & Legend Bar */}
       <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-        {/* Tooltip Hover Info */}
         <div className="h-5 flex items-center gap-1.5 font-mono text-xs">
           {hoveredCell ? (
             <span className="text-slate-200 flex items-center gap-1.5 bg-slate-800/90 px-2 py-0.5 rounded-lg border border-slate-700">
@@ -230,7 +215,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
           )}
         </div>
 
-        {/* Intensity Scale Legend */}
         <div className="flex items-center gap-1.5 text-[11px] text-slate-400 select-none">
           <span>Less</span>
           <div className="w-2.5 h-2.5 rounded-[2px] bg-[#161b22] border border-[#30363d]" title="0 tasks" />
@@ -240,6 +224,6 @@ export default function Top3ContributionGraph({ allTasks = [], currentDate }) {
           <span>More</span>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
